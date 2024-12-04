@@ -1,0 +1,6 @@
+[tool.basedpyright]
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnusedCallResult = false
+reportAny = false
+reportUnknownArgumentType = false
