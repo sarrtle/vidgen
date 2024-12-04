@@ -6,10 +6,13 @@ Supports Windows / Mac / Linux.
 from PIL import Image
 from customtkinter import CTk, CTkFrame, CTkLabel, CTkTextbox
 
+from models.config_model import ConfigData
 from user_interface.desktop.components.sidebar import Sidebar
 from user_interface.desktop.components.story_window import StoryWindow
 from utility.tools import load_config_object
 from utility.vidgen_api import VidGen
+
+import platform
 
 # incase needing to change the desktop size for big monitors.
 DESKTOP_WIDTH = 1280
@@ -17,17 +20,7 @@ DESKTOP_HEIGHT = 720
 
 
 class DesktopApp(CTk):
-    """Main program for the desktop application.
-
-    Notes:
-        The left and the right side container are the important
-        frames to be use on every location of the control widgets.
-
-        Use self._left_side_container and self._right_side_container
-        if you want to add more control widgets to their respective
-        frames.
-
-    """
+    """Main program for the desktop application."""
 
     def __init__(self):
         """Initialize the DesktopApp."""
@@ -35,13 +28,17 @@ class DesktopApp(CTk):
 
         # basic configurations
         self.geometry(f"{DESKTOP_WIDTH}x{DESKTOP_HEIGHT}")
-        self.attributes("-type", "utility")
+
+        if platform.system() == "Linux":
+            self.attributes("-type", "utility")
 
         # load some important variables
         self._video_file_clip: VidGen = VidGen()
-        self._default_preview_image = Image.open("assets/preview/default.png")
-        self._config_object = load_config_object()
-        self._default_font = "assets/fonts/futura-extra-bold.ttf"
+        self._default_preview_image: Image.Image = Image.open(
+            "assets/preview/default.png"
+        )
+        self._config_object: ConfigData = load_config_object()
+        self._default_font: str = "assets/fonts/futura-extra-bold.ttf"
 
         # Main frames
         self._right_side_container: CTkFrame | None = None

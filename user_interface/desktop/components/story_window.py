@@ -31,6 +31,10 @@ class StoryWindow(CTkFrame):
             component or widget are done on method:
             `StoryWindow.render`.
 
+            This component has 2 containers. The left one is
+            the preview image and the right one is the video
+            settings.
+
         """
         super().__init__(master, **kwargs)
 
