@@ -1,6 +1,7 @@
 [tool.basedpyright]
 reportMissingTypeStubs = false
 reportUnknownMemberType = false
+reportUnknownVariableType= false
 reportUnusedCallResult = false
 reportAny = false
 reportExplicitAny = false

@@ -11,7 +11,10 @@ from customtkinter import (
     CTkLabel,
     CTkScrollableFrame,
     CTkTextbox,
+    Variable,
 )
+
+from tkinter import messagebox
 
 from typing import Any, Literal
 
@@ -38,7 +41,14 @@ class StoryWindow(CTkFrame):
         """
         super().__init__(master, **kwargs)
 
-        # some important variables
+        # values get and set
+        self._theme_variable: Variable = Variable(value="Horror")
+        self._text_model_variable: Variable = Variable(value="DeepInfra")
+        self._idea_entry: CTkEntry | None = None
+        self._context_textbox: CTkTextbox | None = None
+        self._voice_model_variable: Variable = Variable(value="Arceus")
+        self._text_position_variable: Variable = Variable(value="center")
+        self._text_font_variable: Variable = Variable(value="default")
 
         # left and right container
         self._left_side_container: CTkFrame | None = None
@@ -103,9 +113,11 @@ class StoryWindow(CTkFrame):
         CTkLabel(
             master=theme_frame, text="Theme", font=self._get_font(16, "bold")
         ).pack(side="left", anchor="w", padx=16, pady=16)
-        CTkComboBox(master=theme_frame, values=["Horror", "Facts"]).pack(
-            anchor="e", padx=16, pady=16
-        )
+        CTkComboBox(
+            master=theme_frame,
+            values=["Horror", "Facts"],
+            variable=self._theme_variable,
+        ).pack(anchor="e", padx=16, pady=16)
 
         # AI model
         # use theme text model frame since they are group
@@ -120,6 +132,7 @@ class StoryWindow(CTkFrame):
                 "DeepInfra",
                 "Openai",
             ],
+            variable=self._text_model_variable,
         ).pack(anchor="e", padx=16, pady=(0, 16))
 
     def _setup_idea_context_settings(self):
@@ -134,12 +147,14 @@ class StoryWindow(CTkFrame):
             text="Idea",
             font=self._get_font(16, "bold"),
         ).pack(anchor="w", padx=16, pady=(16, 8))
-        CTkEntry(master=idea_context_frame, placeholder_text="Tell me your idea.").pack(
-            fill="x", padx=16, pady=(0, 8)
+        self._idea_entry = CTkEntry(
+            master=idea_context_frame,
+            placeholder_text="Tell me your idea.",
         )
-        CTkButton(master=idea_context_frame, text="Generate").pack(
-            anchor="e", padx=16, pady=(0, 8)
-        )
+        self._idea_entry.pack(fill="x", padx=16, pady=(0, 8))
+        CTkButton(
+            master=idea_context_frame, text="Generate", command=self._on_generate_idea
+        ).pack(anchor="e", padx=16, pady=(0, 8))
 
         # Context
         CTkLabel(
@@ -150,7 +165,8 @@ class StoryWindow(CTkFrame):
             text="Paste if you have an already made content or feel free to edit from the generated idea.",
             font=self._get_font(12, "normal"),
         ).pack(anchor="w", padx=16, pady=(0, 8))
-        CTkTextbox(master=idea_context_frame).pack(fill="x", padx=16, pady=(0, 16))
+        self._context_textbox = CTkTextbox(master=idea_context_frame)
+        self._context_textbox.pack(fill="x", padx=16, pady=(0, 16))
 
     def _setup_preview_voiceover_settings(self):
         """Set up preview voiceover widgets."""
@@ -168,6 +184,7 @@ class StoryWindow(CTkFrame):
             master=voice_model_frame,
             values=["Arceus", "Luna", "Asteria"],
             font=self._get_font(),
+            variable=self._voice_model_variable,
         ).pack(anchor="e", padx=16, pady=(16, 0))
         CTkButton(master=voice_model_frame, text="Play").pack(
             anchor="e", padx=16, pady=(8, 16)
@@ -213,6 +230,7 @@ class StoryWindow(CTkFrame):
             master=text_position_frame,
             values=["top", "center", "bottom"],
             font=self._get_font(),
+            variable=self._text_position_variable,
         ).pack(anchor="e", padx=16, pady=(0, 16))
 
         # text font
@@ -227,6 +245,7 @@ class StoryWindow(CTkFrame):
             master=text_font_frame,
             values=["default", "Futura", "Monosans"],
             font=self._get_font(),
+            variable=self._text_font_variable,
         ).pack(anchor="e", padx=16, pady=(0, 16))
 
     def _get_font(self, size: int = 14, weight: Literal["normal", "bold"] = "normal"):
@@ -236,6 +255,30 @@ class StoryWindow(CTkFrame):
         """
         return CTkFont("assets/fonts/futura-extra-bold.ttf", size=size, weight=weight)
 
+    def _get_idea_entry_value(self):
+        """Get the value of entry from idea entry."""
+        if self._idea_entry:
+            return self._idea_entry.get()
+
+        return ""
+
+    def _get_context_textbox_value(self):
+        """Get the valuue of text box from context."""
+        if self._context_textbox:
+            return self._context_textbox.get("1.0", "end-1c")
+
+        return ""
+
     def render(self):
         """Render the component to the main window."""
         self.pack(expand=True, fill="both", side="left", anchor="w")
+
+    # Button commands
+    def _on_generate_idea(self):
+        idea_string = self._get_idea_entry_value()
+
+        if not idea_string:
+            messagebox.showwarning(
+                title="No Idea!",
+                message="Please input some idea before clicking generate.",
+            )
