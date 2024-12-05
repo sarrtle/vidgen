@@ -27,6 +27,7 @@ class DesktopApp(CTk):
         super().__init__()
 
         # basic configurations
+        self.title("Vidgen")
         self.geometry(f"{DESKTOP_WIDTH}x{DESKTOP_HEIGHT}")
 
         if platform.system() == "Linux":

@@ -40,7 +40,7 @@ class _SidebarButton(CTkButton):
         """
         super().__init__(master, text=text, fg_color="transparent", **kwargs)
 
-        self.text = text
+        self.text: str = text
 
     def render(self):
         """Render the component to the sidebar frame."""
@@ -68,7 +68,7 @@ class Sidebar(CTkFrame):
         """
         super().__init__(master, **kwargs)
 
-        self._inner_frame = CTkFrame(master=self, fg_color="transparent")
+        self._inner_frame: CTkFrame = CTkFrame(master=self, fg_color="transparent")
         self._inner_frame.pack(fill="both", expand=True, padx=15, pady=20)
 
         # add sidebar buttons
@@ -81,6 +81,9 @@ class Sidebar(CTkFrame):
         riddle_button = _SidebarButton(master=self._inner_frame, text="Riddle")
         music_button = _SidebarButton(master=self._inner_frame, text="Music")
         upload_button = _SidebarButton(master=self._inner_frame, text="Upload")
+        video_button = _SidebarButton(master=self._inner_frame, text="Videos")
+        clip_button = _SidebarButton(master=self._inner_frame, text="Clips")
+        api_button = _SidebarButton(master=self._inner_frame, text="Api")
 
         # register the on click command
         # I don't know why the loop method of registration won't work. Even I made copies
@@ -90,6 +93,9 @@ class Sidebar(CTkFrame):
         riddle_button.configure(command=lambda: self.on_select_sidebar_button("Riddle"))
         music_button.configure(command=lambda: self.on_select_sidebar_button("Music"))
         upload_button.configure(command=lambda: self.on_select_sidebar_button("Upload"))
+        video_button.configure(command=lambda: self.on_select_sidebar_button("Videos"))
+        clip_button.configure(command=lambda: self.on_select_sidebar_button("Clips"))
+        api_button.configure(command=lambda: self.on_select_sidebar_button("Api"))
 
         # register the buttons for future references.
         self._sidebar_buttons = [
@@ -97,6 +103,9 @@ class Sidebar(CTkFrame):
             riddle_button,
             music_button,
             upload_button,
+            video_button,
+            clip_button,
+            api_button,
         ]
 
         # render buttons to the sidebar frame
@@ -104,6 +113,9 @@ class Sidebar(CTkFrame):
         riddle_button.render()
         music_button.render()
         upload_button.render()
+        video_button.render()
+        clip_button.render()
+        api_button.render()
 
         # default selection
         self.on_select_sidebar_button("Story")
