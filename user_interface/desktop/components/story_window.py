@@ -26,7 +26,7 @@ class StoryWindow(CTkFrame):
             master (customtkinter.CTkFrame): The main window of the Desktop.
             **kwargs (Any): What CTkFrame needs.
 
-        Note:
+        Notes:
             Any changes made when packing or rendering the
             component or widget are done on method:
             `StoryWindow.render`.
@@ -39,13 +39,10 @@ class StoryWindow(CTkFrame):
         super().__init__(master, **kwargs)
 
         # some important variables
-        self.font = CTkFont(
-            "assets/fonts/futura-extra-bold.ttf", size=16, weight="bold"
-        )
 
         # left and right container
         self._left_side_container: CTkFrame | None = None
-        self._right_side_container: CTkScrollableFrame | None = None
+        self._right_side_container: CTkFrame | None = None
 
         # image preview widget
         self._image_preview_widget: CTkLabel | None = None
@@ -57,10 +54,20 @@ class StoryWindow(CTkFrame):
         """Set up the preview and control options for Story window."""
         self._left_side_container = CTkFrame(master=self)
         self._left_side_container.pack(fill="both", side="left")
-        self._right_side_container = CTkScrollableFrame(
+        scrollable_right_side_container = CTkScrollableFrame(
             master=self, fg_color="transparent"
         )
-        self._right_side_container.pack(fill="both", expand=True, padx=24, pady=24)
+        scrollable_right_side_container.pack(fill="both", expand=True)
+        self._right_side_container = CTkFrame(
+            master=scrollable_right_side_container, fg_color="transparent"
+        )
+        self._right_side_container.pack(
+            fill="both", expand=True, padx=24, pady=(24, 16)
+        )
+
+        CTkButton(master=self, text="Render Video").pack(
+            anchor="e", padx=24, pady=(8, 16)
+        )
 
         # load image preview
         default_image = Image.open("assets/preview/default.png")
