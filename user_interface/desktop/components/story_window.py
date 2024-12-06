@@ -18,15 +18,20 @@ from tkinter import messagebox
 
 from typing import Any, Literal
 
+from models.config_data import ConfigData
+from models.story_window_model import StoryWindowValues
+from utility.config_tools import save_api_config
+
 
 class StoryWindow(CTkFrame):
     """Story window contents."""
 
-    def __init__(self, master: CTkFrame, **kwargs: Any):
+    def __init__(self, master: CTkFrame, config_data: ConfigData, **kwargs: Any):
         """Initialize story window.
 
         Args:
             master (customtkinter.CTkFrame): The main window of the Desktop.
+            config_data (models.config_data.ConfigData): For saving and loading configurations
             **kwargs (Any): What CTkFrame needs.
 
         Notes:
@@ -40,6 +45,10 @@ class StoryWindow(CTkFrame):
 
         """
         super().__init__(master, **kwargs)
+
+        # important variables
+        self._config_data: ConfigData = config_data
+        self._story_widows_values: StoryWindowValues | None = None
 
         # values get and set
         self._theme_variable: Variable = Variable(value="Horror")
@@ -117,7 +126,9 @@ class StoryWindow(CTkFrame):
             master=theme_frame,
             values=["Horror", "Facts"],
             variable=self._theme_variable,
+            command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=16)
+        self._theme_variable.set(value=self._config_data.story_settings.theme)
 
         # AI model
         # use theme text model frame since they are group
@@ -133,7 +144,9 @@ class StoryWindow(CTkFrame):
                 "Openai",
             ],
             variable=self._text_model_variable,
+            command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(0, 16))
+        self._text_model_variable.set(value=self._config_data.story_settings.text_model)
 
     def _setup_idea_context_settings(self):
         """Set up generate from idea and edit context widgets."""
@@ -185,7 +198,11 @@ class StoryWindow(CTkFrame):
             values=["Arceus", "Luna", "Asteria"],
             font=self._get_font(),
             variable=self._voice_model_variable,
+            command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(16, 0))
+        self._voice_model_variable.set(
+            value=self._config_data.story_settings.voice_model
+        )
         CTkButton(master=voice_model_frame, text="Play").pack(
             anchor="e", padx=16, pady=(8, 16)
         )
@@ -231,7 +248,11 @@ class StoryWindow(CTkFrame):
             values=["top", "center", "bottom"],
             font=self._get_font(),
             variable=self._text_position_variable,
+            command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(0, 16))
+        self._text_position_variable.set(
+            value=self._config_data.story_settings.text_position
+        )
 
         # text font
         text_font_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
@@ -246,7 +267,9 @@ class StoryWindow(CTkFrame):
             values=["default", "Futura", "Monosans"],
             font=self._get_font(),
             variable=self._text_font_variable,
+            command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(0, 16))
+        self._text_font_variable.set(value=self._config_data.story_settings.font)
 
     def _get_font(self, size: int = 14, weight: Literal["normal", "bold"] = "normal"):
         """Create font.
@@ -269,9 +292,32 @@ class StoryWindow(CTkFrame):
 
         return ""
 
-    def render(self):
-        """Render the component to the main window."""
-        self.pack(expand=True, fill="both", side="left", anchor="w")
+    def _get_all_values(self):
+        """Get all values from the story window settings."""
+        return StoryWindowValues(
+            theme=self._theme_variable.get(),
+            text_model=self._text_model_variable.get(),
+            idea=self._get_idea_entry_value(),
+            context=self._get_context_textbox_value(),
+            voice_model=self._voice_model_variable.get(),
+            text_position=self._text_position_variable.get(),
+            text_font=self._text_font_variable.get(),
+        )
+
+    def _save_story_settings_to_config(self):
+        """Save story settings to `config.json` local file."""
+        story_windows_values = self._get_all_values()
+
+        # save story settings data on config
+        self._config_data.story_settings.theme = story_windows_values.theme
+        self._config_data.story_settings.text_model = story_windows_values.text_model
+        self._config_data.story_settings.voice_model = story_windows_values.voice_model
+        self._config_data.story_settings.font = story_windows_values.text_font
+        self._config_data.story_settings.text_position = (
+            story_windows_values.text_position
+        )
+
+        save_api_config(config_object=self._config_data)
 
     # Button commands
     def _on_generate_idea(self):
@@ -282,3 +328,7 @@ class StoryWindow(CTkFrame):
                 title="No Idea!",
                 message="Please input some idea before clicking generate.",
             )
+
+    def render(self):
+        """Render the component to the main window."""
+        self.pack(expand=True, fill="both", side="left", anchor="w")

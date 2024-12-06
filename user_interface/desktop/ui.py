@@ -6,10 +6,10 @@ Supports Windows / Mac / Linux.
 from PIL import Image
 from customtkinter import CTk, CTkFrame, CTkLabel, CTkTextbox
 
-from models.config_model import ConfigData
+from models.config_data import ConfigData
 from user_interface.desktop.components.sidebar import Sidebar
 from user_interface.desktop.components.story_window import StoryWindow
-from utility.tools import load_config_object
+from utility.config_tools import load_config_object
 from utility.vidgen_api import VidGen
 
 import platform
@@ -62,5 +62,7 @@ class DesktopApp(CTk):
         sidebar.render()
 
         # sidebar default content
-        story_window = StoryWindow(master=main_window_frame)
+        story_window = StoryWindow(
+            master=main_window_frame, config_data=self._config_object
+        )
         story_window.render()
