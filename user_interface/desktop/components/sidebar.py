@@ -10,7 +10,8 @@ Notes:
 
 """
 
-from typing import Any
+from typing import Any, override
+from collections.abc import Sequence
 from customtkinter import CTkButton, CTkFrame, ThemeManager
 
 
@@ -42,9 +43,10 @@ class _SidebarButton(CTkButton):
 
         self.text: str = text
 
-    def render(self):
+    @override
+    def pack(self, **kwargs: Any):
         """Render the component to the sidebar frame."""
-        self.pack(pady=4)
+        super().pack(pady=4)
 
 
 class Sidebar(CTkFrame):
@@ -70,6 +72,10 @@ class Sidebar(CTkFrame):
 
         self._inner_frame: CTkFrame = CTkFrame(master=self, fg_color="transparent")
         self._inner_frame.pack(fill="both", expand=True, padx=15, pady=20)
+
+        # important variables
+        self._sidebar_components: Sequence[CTkFrame] = []
+        self._previous_selected: CTkFrame
 
         # add sidebar buttons
         self._sidebar_buttons: list[_SidebarButton] = []
@@ -109,16 +115,13 @@ class Sidebar(CTkFrame):
         ]
 
         # render buttons to the sidebar frame
-        story_button.render()
-        riddle_button.render()
-        music_button.render()
-        upload_button.render()
-        video_button.render()
-        clip_button.render()
-        api_button.render()
-
-        # default selection
-        self.on_select_sidebar_button("Story")
+        story_button.pack()
+        riddle_button.pack()
+        music_button.pack()
+        upload_button.pack()
+        video_button.pack()
+        clip_button.pack()
+        api_button.pack()
 
     def on_select_sidebar_button(self, button_text: str):
         """Do something when one of the sidebar button was selected."""
@@ -129,9 +132,45 @@ class Sidebar(CTkFrame):
                     fg_color=ThemeManager.theme["CTkButton"]["fg_color"],
                     hover=False,
                 )
+
+                # don't do anything if same button was selected
+                if self._previous_selected.__dict__.get("name") == button_text:
+                    continue
+
+                # get selected sidebar component
+                current_selected = None
+                for sidebar_component in self._sidebar_components:
+                    if sidebar_component.__dict__.get("name") == button_text:
+                        current_selected = sidebar_component
+
+                # assert (
+                #     current_selected is not None
+                # ), f"No attribute `name` on {button.text}."
+                # TODO: Once all sidebar components has been made,
+                #       uncomment assertion for checking of attribute `name`
+                #       remove this temporary line of code
+                if current_selected is None:
+                    current_selected = self._previous_selected
+
+                # remove the previous selected
+                self._previous_selected.pack_forget()
+                self._previous_selected = current_selected
+
+                # add the new selected
+                current_selected.pack()
             else:
                 button.configure(fg_color="transparent", hover=True)
 
-    def render(self):
+    def register_components(self, list_objects: Sequence[CTkFrame]):
+        """Register all sidebar componets.
+
+        All components will be use later for showing and hiding
+        windows while clicking sidebar buttons.
+        """
+        self._sidebar_components = list_objects
+        self._previous_selected = list_objects[0]
+
+    @override
+    def pack(self, **kwargs: Any):
         """Render the component to the main window."""
-        self.pack(fill="y", side="left", anchor="w")
+        super().pack(fill="y", side="left", anchor="w")

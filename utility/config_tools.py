@@ -2,7 +2,7 @@
 
 from os.path import isfile
 from json import dump, load
-from models.config_data import ConfigData, StoryDefaultSettings
+from models.config_data import ApiDefaultSettings, ConfigData, StoryDefaultSettings
 
 
 def save_api_config(config_object: ConfigData):
@@ -13,10 +13,14 @@ def save_api_config(config_object: ConfigData):
 
     """
     data = {
-        "api": {
-            "deepinfra_token": config_object.deepinfra_token,
-            "openai_token": config_object.openai_token,
-            "deepgram_token": config_object.deepgram_token,
+        "api_settings": {
+            "deepinfra_text_model": config_object.api_settings.deepinfra_text_model,
+            "deepinfra_vision_model": config_object.api_settings.deepinfra_vision_model,
+            "deepinfra_token": config_object.api_settings.deepinfra_token,
+            "openai_text_model": config_object.api_settings.openai_text_model,
+            "openai_vision_model": config_object.api_settings.openai_vision_model,
+            "openai_token": config_object.api_settings.openai_token,
+            "deepgram_token": config_object.api_settings.deepgram_token,
         },
         "default_settings": {
             "story": {
@@ -37,7 +41,7 @@ def load_config_object() -> ConfigData:
     """Load the config object."""
     # return config data with default values
     if not isfile("config.json"):
-        config_data = ConfigData(StoryDefaultSettings())
+        config_data = ConfigData(StoryDefaultSettings(), ApiDefaultSettings())
         save_api_config(config_data)
         return config_data
 
@@ -54,9 +58,18 @@ def load_config_object() -> ConfigData:
         text_position=config_data["default_settings"]["story"]["text_position"],
     )
 
+    # load the api settings
+    api_settings = ApiDefaultSettings(
+        deepinfra_text_model=config_data["api_settings"]["deepinfra_text_model"],
+        deepinfra_vision_model=config_data["api_settings"]["deepinfra_vision_model"],
+        deepinfra_token=config_data["api_settings"]["deepinfra_token"],
+        openai_text_model=config_data["api_settings"]["openai_text_model"],
+        openai_vision_model=config_data["api_settings"]["openai_vision_model"],
+        openai_token=config_data["api_settings"]["openai_token"],
+        deepgram_token=config_data["api_settings"]["deepgram_token"],
+    )
+
     return ConfigData(
         story_settings=story_settings,
-        deepinfra_token=config_data["api"]["deepinfra_token"],
-        openai_token=config_data["api"]["openai_token"],
-        deepgram_token=config_data["api"]["deepgram_token"],
+        api_settings=api_settings,
     )

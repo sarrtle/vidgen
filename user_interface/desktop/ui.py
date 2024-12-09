@@ -3,10 +3,12 @@
 Supports Windows / Mac / Linux.
 """
 
+from collections.abc import Sequence
 from PIL import Image
 from customtkinter import CTk, CTkFrame, CTkLabel, CTkTextbox
 
 from models.config_data import ConfigData
+from user_interface.desktop.components.api_window import ApiWindow
 from user_interface.desktop.components.sidebar import Sidebar
 from user_interface.desktop.components.story_window import StoryWindow
 from utility.config_tools import load_config_object
@@ -59,10 +61,20 @@ class DesktopApp(CTk):
 
         # sidebar window
         sidebar = Sidebar(master=main_window_frame)
-        sidebar.render()
+        sidebar.pack()
 
         # sidebar default content
         story_window = StoryWindow(
             master=main_window_frame, config_data=self._config_object
         )
-        story_window.render()
+        story_window.pack()
+
+        api_window = ApiWindow(
+            master=main_window_frame, config_data=self._config_object
+        )
+
+        components: Sequence[CTkFrame] = [story_window, api_window]
+        sidebar.register_components(components)
+
+        # default selection
+        sidebar.on_select_sidebar_button("Story")

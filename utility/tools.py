@@ -1,6 +1,8 @@
 """All Utility tools for this project."""
 
 from os import listdir
+from typing import Literal
+from customtkinter import CTkFont
 from yt_dlp import YoutubeDL
 
 
@@ -17,3 +19,13 @@ def download_youtube_video(url: str):
 
     with YoutubeDL(options) as ytdl:
         ytdl.download([url])
+
+
+def tkinter_font(size: int = 14, weight: Literal["normal", "bold"] = "normal"):
+    """Create font with custom tkinter.
+
+    Notes:
+        This is for the desktop user interface only.
+
+    """
+    return CTkFont("assets/font/futura-extra-bold.ttf", size=size, weight=weight)

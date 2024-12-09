@@ -5,7 +5,6 @@ from customtkinter import (
     CTkButton,
     CTkComboBox,
     CTkEntry,
-    CTkFont,
     CTkFrame,
     CTkImage,
     CTkLabel,
@@ -16,8 +15,9 @@ from customtkinter import (
 
 from tkinter import messagebox, filedialog
 
-from typing import Any, Literal
+from typing import Any, override
 
+from utility.tools import tkinter_font
 from utility.vidgen_api import VidGen
 from models.config_data import ConfigData
 from models.story_window_model import StoryWindowValues
@@ -36,16 +36,13 @@ class StoryWindow(CTkFrame):
             **kwargs (Any): What CTkFrame needs.
 
         Notes:
-            Any changes made when packing or rendering the
-            component or widget are done on method:
-            `StoryWindow.render`.
-
             This component has 2 containers. The left one is
             the preview image and the right one is the video
             settings.
 
         """
         super().__init__(master, **kwargs)
+        self.name: str = "Story"
 
         # important variables
         self._config_data: ConfigData = config_data
@@ -122,9 +119,9 @@ class StoryWindow(CTkFrame):
         theme_text_model_frame.pack(fill="x", expand=True)
         theme_frame = CTkFrame(master=theme_text_model_frame, fg_color="transparent")
         theme_frame.pack(fill="x", expand=True)
-        CTkLabel(
-            master=theme_frame, text="Theme", font=self._get_font(16, "bold")
-        ).pack(side="left", anchor="w", padx=16, pady=16)
+        CTkLabel(master=theme_frame, text="Theme", font=tkinter_font(16, "bold")).pack(
+            side="left", anchor="w", padx=16, pady=16
+        )
         CTkComboBox(
             master=theme_frame,
             values=["Horror", "Facts"],
@@ -138,7 +135,7 @@ class StoryWindow(CTkFrame):
         ai_model_frame = CTkFrame(master=theme_text_model_frame, fg_color="transparent")
         ai_model_frame.pack(fill="x", expand=True)
         CTkLabel(
-            master=ai_model_frame, text="Text Model", font=self._get_font(16, "bold")
+            master=ai_model_frame, text="Text Model", font=tkinter_font(16, "bold")
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
         CTkComboBox(
             master=ai_model_frame,
@@ -161,7 +158,7 @@ class StoryWindow(CTkFrame):
         CTkLabel(
             master=idea_frame,
             text="Idea",
-            font=self._get_font(16, "bold"),
+            font=tkinter_font(16, "bold"),
         ).pack(anchor="w", padx=16, pady=(16, 8))
         self._idea_entry = CTkEntry(
             master=idea_context_frame,
@@ -174,12 +171,12 @@ class StoryWindow(CTkFrame):
 
         # Context
         CTkLabel(
-            master=idea_context_frame, text="Context", font=self._get_font(16, "bold")
+            master=idea_context_frame, text="Context", font=tkinter_font(16, "bold")
         ).pack(anchor="w", padx=16)
         CTkLabel(
             master=idea_context_frame,
             text="Paste if you have an already made content or feel free to edit from the generated idea.",
-            font=self._get_font(12, "normal"),
+            font=tkinter_font(12, "normal"),
         ).pack(anchor="w", padx=16, pady=(0, 8))
         self._context_textbox = CTkTextbox(master=idea_context_frame)
         self._context_textbox.pack(fill="x", padx=16, pady=(0, 16))
@@ -194,12 +191,12 @@ class StoryWindow(CTkFrame):
         CTkLabel(
             master=voice_model_frame,
             text="Voice model",
-            font=self._get_font(16, "bold"),
+            font=tkinter_font(16, "bold"),
         ).pack(side="left", anchor="w", padx=16, pady=16)
         CTkComboBox(
             master=voice_model_frame,
             values=["Arceus", "Luna", "Asteria"],
-            font=self._get_font(),
+            font=tkinter_font(),
             variable=self._voice_model_variable,
             command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(16, 0))
@@ -219,9 +216,9 @@ class StoryWindow(CTkFrame):
         # clips
         clips_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
         clips_frame.pack(fill="x", expand=True)
-        CTkLabel(
-            master=clips_frame, text="Clips", font=self._get_font(16, "bold")
-        ).pack(anchor="w", side="left", padx=16, pady=16)
+        CTkLabel(master=clips_frame, text="Clips", font=tkinter_font(16, "bold")).pack(
+            anchor="w", side="left", padx=16, pady=16
+        )
         CTkButton(
             master=clips_frame, text="browse", command=self._on_browse_files
         ).pack(anchor="e", padx=16, pady=16)
@@ -232,7 +229,7 @@ class StoryWindow(CTkFrame):
         CTkLabel(
             master=randomize_frame,
             text="Randomize position",
-            font=self._get_font(16, "bold"),
+            font=tkinter_font(16, "bold"),
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
         CTkButton(master=randomize_frame, text="randomize").pack(
             anchor="e", padx=16, pady=(0, 16)
@@ -246,12 +243,12 @@ class StoryWindow(CTkFrame):
         CTkLabel(
             master=text_position_frame,
             text="Text position",
-            font=self._get_font(16, "bold"),
+            font=tkinter_font(16, "bold"),
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
         CTkComboBox(
             master=text_position_frame,
             values=["top", "center", "bottom"],
-            font=self._get_font(),
+            font=tkinter_font(),
             variable=self._text_position_variable,
             command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(0, 16))
@@ -265,23 +262,16 @@ class StoryWindow(CTkFrame):
         CTkLabel(
             master=text_font_frame,
             text="Text font",
-            font=self._get_font(16, "bold"),
+            font=tkinter_font(16, "bold"),
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
         CTkComboBox(
             master=text_font_frame,
             values=["default", "Futura", "Monosans"],
-            font=self._get_font(),
+            font=tkinter_font(),
             variable=self._text_font_variable,
             command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(0, 16))
         self._text_font_variable.set(value=self._config_data.story_settings.font)
-
-    def _get_font(self, size: int = 14, weight: Literal["normal", "bold"] = "normal"):
-        """Create font.
-
-        TODO: Make this as a utility.
-        """
-        return CTkFont("assets/fonts/futura-extra-bold.ttf", size=size, weight=weight)
 
     def _get_idea_entry_value(self):
         """Get the value of entry from idea entry."""
@@ -325,7 +315,15 @@ class StoryWindow(CTkFrame):
         save_api_config(config_object=self._config_data)
 
     def _load_preview_image(self, image: Image.Image):
-        """Load the image inside the preview widget."""
+        """Load the image inside the preview widget.
+
+        Args:
+            image (Image.Image): Loaded pillow image.
+
+        Raises:
+            AssertionError: if only the image preview widget is None.
+
+        """
         assert (
             self._image_preview_widget is not None
         ), "Something unexpected happen, image preview widget was not loaded."
@@ -363,6 +361,7 @@ class StoryWindow(CTkFrame):
         image = self._video_file_clip.get_render_image()
         self._load_preview_image(image=image)
 
-    def render(self):
+    @override
+    def pack(self, **kwargs: Any):
         """Render the component to the main window."""
-        self.pack(expand=True, fill="both", side="left", anchor="w")
+        super().pack(expand=True, fill="both", side="left", anchor="w")
