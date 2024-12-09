@@ -14,10 +14,11 @@ from customtkinter import (
     Variable,
 )
 
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 
 from typing import Any, Literal
 
+from utility.vidgen_api import VidGen
 from models.config_data import ConfigData
 from models.story_window_model import StoryWindowValues
 from utility.config_tools import save_api_config
@@ -49,6 +50,8 @@ class StoryWindow(CTkFrame):
         # important variables
         self._config_data: ConfigData = config_data
         self._story_widows_values: StoryWindowValues | None = None
+        self._clip_path: str | None = None
+        self._video_file_clip: VidGen = VidGen()
 
         # values get and set
         self._theme_variable: Variable = Variable(value="Horror")
@@ -219,7 +222,9 @@ class StoryWindow(CTkFrame):
         CTkLabel(
             master=clips_frame, text="Clips", font=self._get_font(16, "bold")
         ).pack(anchor="w", side="left", padx=16, pady=16)
-        CTkButton(master=clips_frame, text="browse").pack(anchor="e", padx=16, pady=16)
+        CTkButton(
+            master=clips_frame, text="browse", command=self._on_browse_files
+        ).pack(anchor="e", padx=16, pady=16)
 
         # randomize position
         randomize_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
@@ -319,8 +324,20 @@ class StoryWindow(CTkFrame):
 
         save_api_config(config_object=self._config_data)
 
+    def _load_preview_image(self, image: Image.Image):
+        """Load the image inside the preview widget."""
+        assert (
+            self._image_preview_widget is not None
+        ), "Something unexpected happen, image preview widget was not loaded."
+
+        self._image_preview_widget.configure(
+            text="",
+            image=CTkImage(light_image=image, dark_image=image, size=(360, 640)),
+        )
+
     # Button commands
     def _on_generate_idea(self):
+        """Generate context base on idea."""
         idea_string = self._get_idea_entry_value()
 
         if not idea_string:
@@ -328,6 +345,23 @@ class StoryWindow(CTkFrame):
                 title="No Idea!",
                 message="Please input some idea before clicking generate.",
             )
+
+    def _on_browse_files(self):
+        """Browse all clips inside the assets folder."""
+        # load (1) clip for now
+        clip = filedialog.askopenfilename(
+            defaultextension=".mp4", initialdir="assets/clips/"
+        )
+
+        if not clip:
+            return
+
+        self._clip_path = clip
+        self._video_file_clip.load_video(self._clip_path)
+
+        # load image preview
+        image = self._video_file_clip.get_render_image()
+        self._load_preview_image(image=image)
 
     def render(self):
         """Render the component to the main window."""
