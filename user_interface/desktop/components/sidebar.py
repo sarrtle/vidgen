@@ -86,7 +86,6 @@ class Sidebar(CTkFrame):
         story_button = _SidebarButton(master=self._inner_frame, text="Story")
         riddle_button = _SidebarButton(master=self._inner_frame, text="Riddle")
         music_button = _SidebarButton(master=self._inner_frame, text="Music")
-        upload_button = _SidebarButton(master=self._inner_frame, text="Upload")
         video_button = _SidebarButton(master=self._inner_frame, text="Videos")
         clip_button = _SidebarButton(master=self._inner_frame, text="Clips")
         api_button = _SidebarButton(master=self._inner_frame, text="Api")
@@ -98,7 +97,6 @@ class Sidebar(CTkFrame):
         story_button.configure(command=lambda: self.on_select_sidebar_button("Story"))
         riddle_button.configure(command=lambda: self.on_select_sidebar_button("Riddle"))
         music_button.configure(command=lambda: self.on_select_sidebar_button("Music"))
-        upload_button.configure(command=lambda: self.on_select_sidebar_button("Upload"))
         video_button.configure(command=lambda: self.on_select_sidebar_button("Videos"))
         clip_button.configure(command=lambda: self.on_select_sidebar_button("Clips"))
         api_button.configure(command=lambda: self.on_select_sidebar_button("Api"))
@@ -108,7 +106,6 @@ class Sidebar(CTkFrame):
             story_button,
             riddle_button,
             music_button,
-            upload_button,
             video_button,
             clip_button,
             api_button,
@@ -118,7 +115,6 @@ class Sidebar(CTkFrame):
         story_button.pack()
         riddle_button.pack()
         music_button.pack()
-        upload_button.pack()
         video_button.pack()
         clip_button.pack()
         api_button.pack()

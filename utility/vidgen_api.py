@@ -81,3 +81,8 @@ class VidGen:
         image = Image.fromarray(frame)
 
         return image
+
+    def close(self) -> None:
+        """Free self from memory."""
+        if self._video_file_clip:
+            self._video_file_clip.close()
