@@ -9,7 +9,9 @@ from customtkinter import (
     CTkImage,
     CTkLabel,
     CTkScrollableFrame,
+    CTkSlider,
     CTkTextbox,
+    IntVar,
     Variable,
 )
 
@@ -49,6 +51,8 @@ class StoryWindow(CTkFrame):
         self._story_widows_values: StoryWindowValues | None = None
         self._clip_path: str | None = None
         self._video_file_clip: VidGen = VidGen()
+        self._stroke_label: CTkLabel
+        self._stroke_save_schedule: str | None = None
 
         # values get and set
         self._theme_variable: Variable = Variable(value="Horror")
@@ -58,6 +62,9 @@ class StoryWindow(CTkFrame):
         self._voice_model_variable: Variable = Variable(value="Arceus")
         self._text_position_variable: Variable = Variable(value="center")
         self._text_font_variable: Variable = Variable(value="default")
+        self._text_color_variable: Variable = Variable(value="yellow")
+        self._text_style_variable: Variable = Variable(value="3 words")
+        self._text_stroke_variable: IntVar = IntVar(value=5)
 
         # left and right container
         self._left_side_container: CTkFrame | None = None
@@ -273,6 +280,63 @@ class StoryWindow(CTkFrame):
         ).pack(anchor="e", padx=16, pady=(0, 16))
         self._text_font_variable.set(value=self._config_data.story_settings.font)
 
+        # text color
+        text_color_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
+        text_color_frame.pack(fill="x", expand=True)
+        CTkLabel(
+            master=text_color_frame, text="Text color", font=tkinter_font(16, "bold")
+        ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
+        CTkComboBox(
+            master=text_color_frame,
+            values=["white", "yellow", "violet", "blue"],
+            font=tkinter_font(),
+            variable=self._text_color_variable,
+            command=lambda _: self._save_story_settings_to_config(),
+        ).pack(anchor="e", padx=16, pady=(0, 16))
+        self._text_color_variable.set(value=self._config_data.story_settings.text_color)
+
+        # text style
+        text_style_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
+        text_style_frame.pack(fill="x", expand=True)
+        CTkLabel(
+            master=text_style_frame, text="Text style", font=tkinter_font(16, "bold")
+        ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
+        CTkComboBox(
+            master=text_style_frame,
+            values=["1 word", "3 words"],
+            variable=self._text_style_variable,
+            command=lambda _: self._save_story_settings_to_config(),
+        ).pack(anchor="e", padx=16, pady=(0, 16))
+        self._text_style_variable.set(value=self._config_data.story_settings.text_style)
+
+        # text stroke width
+        text_stroke_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
+        text_stroke_frame.pack(fill="x", expand=True)
+        CTkLabel(
+            master=text_stroke_frame, text="Text stroke", font=tkinter_font(16, "bold")
+        ).pack(side="left", anchor="w", padx=(16, 0), pady=(0, 16))
+        stroke_slider_frame = CTkFrame(master=text_stroke_frame)
+        stroke_slider_frame.pack(anchor="e", padx=16, pady=(0, 16))
+        self._stroke_label = CTkLabel(
+            master=stroke_slider_frame,
+            text=str(self._config_data.story_settings.text_stroke),
+            font=tkinter_font(),
+        )
+        self._stroke_label.pack(side="left", padx=8, anchor="w")
+        CTkSlider(
+            master=stroke_slider_frame,
+            number_of_steps=10,
+            from_=1,
+            to=10,
+            orientation="horizontal",
+            width=120,
+            variable=self._text_stroke_variable,
+            command=lambda _: self._on_text_stroke_slider_event(),
+        ).pack(anchor="e", pady=8)
+        self._text_stroke_variable.set(
+            value=self._config_data.story_settings.text_stroke
+        )
+
     def _get_idea_entry_value(self):
         """Get the value of entry from idea entry."""
         if self._idea_entry:
@@ -297,6 +361,9 @@ class StoryWindow(CTkFrame):
             voice_model=self._voice_model_variable.get(),
             text_position=self._text_position_variable.get(),
             text_font=self._text_font_variable.get(),
+            text_color=self._text_color_variable.get(),
+            text_style=self._text_style_variable.get(),
+            text_stroke=self._text_stroke_variable.get(),
         )
 
     def _save_story_settings_to_config(self):
@@ -311,6 +378,9 @@ class StoryWindow(CTkFrame):
         self._config_data.story_settings.text_position = (
             story_windows_values.text_position
         )
+        self._config_data.story_settings.text_color = story_windows_values.text_color
+        self._config_data.story_settings.text_style = story_windows_values.text_style
+        self._config_data.story_settings.text_stroke = story_windows_values.text_stroke
 
         save_api_config(config_object=self._config_data)
 
@@ -360,6 +430,19 @@ class StoryWindow(CTkFrame):
         # load image preview
         image = self._video_file_clip.get_render_image()
         self._load_preview_image(image=image)
+
+    # events
+    def _on_text_stroke_slider_event(self):
+        """Text stroke slider event handler."""
+        self._stroke_label.configure(text=str(self._text_stroke_variable.get()))
+
+        if self._stroke_save_schedule is not None:
+            self.after_cancel(self._stroke_save_schedule)
+
+        # schedule a save operation after 300 ms when sliding was not used.
+        self._stroke_save_schedule = self.after(
+            ms=300, func=self._save_story_settings_to_config
+        )
 
     @override
     def pack(self, **kwargs: Any):

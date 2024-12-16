@@ -3,6 +3,10 @@
 Classes:
     - ConfigData: The main configuration object for the entire project.
     - StoryDefaultSettings: Default settings data for the story window.
+
+Todo:
+    - Make all "required" values into another constant value or enumeration.
+
 """
 
 from dataclasses import dataclass
@@ -33,6 +37,9 @@ class StoryDefaultSettings:
     voice_model: Literal["Arceus", "Luna", "Asteria"] = "Arceus"
     font: Literal["default", "Futura", "Monosans"] = "default"
     text_position: Literal["top", "center", "bottom"] = "center"
+    text_color: Literal["white", "yellow", "violet", "blue"] = "yellow"
+    text_style: Literal["1 word", "3 words"] = "3 words"
+    text_stroke: int = 5
 
 
 @dataclass

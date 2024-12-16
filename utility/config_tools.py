@@ -29,6 +29,9 @@ def save_api_config(config_object: ConfigData):
                 "voice_model": config_object.story_settings.voice_model,
                 "font": config_object.story_settings.font,
                 "text_position": config_object.story_settings.text_position,
+                "text_color": config_object.story_settings.text_color,
+                "text_style": config_object.story_settings.text_style,
+                "text_stroke": config_object.story_settings.text_stroke,
             }
         },
     }
@@ -56,6 +59,9 @@ def load_config_object() -> ConfigData:
         voice_model=config_data["default_settings"]["story"]["voice_model"],
         font=config_data["default_settings"]["story"]["font"],
         text_position=config_data["default_settings"]["story"]["text_position"],
+        text_color=config_data["default_settings"]["story"]["text_color"],
+        text_style=config_data["default_settings"]["story"]["text_style"],
+        text_stroke=config_data["default_settings"]["story"]["text_stroke"],
     )
 
     # load the api settings

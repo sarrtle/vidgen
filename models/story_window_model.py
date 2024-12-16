@@ -15,3 +15,6 @@ class StoryWindowValues:
     voice_model: Literal["Arceus", "Luna", "Asteria"]
     text_position: Literal["top", "center", "bottom"]
     text_font: Literal["default", "Futura", "Monosans"]
+    text_color: Literal["white", "yellow", "violet", "blue"]
+    text_style: Literal["1 word", "3 words"]
+    text_stroke: int
