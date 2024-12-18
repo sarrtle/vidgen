@@ -46,8 +46,13 @@ class StoryDefaultSettings:
 class ApiDefaultSettings:
     """Default settings data for the story window."""
 
+    # gemini free model API settings
+    gemini_text_model: Literal["Gemini-free"] = "Gemini-free"
+    gemini_vision_model: Literal["Gemini-vision-free"] = "Gemini-vision-free"
+    gemini_token: str | None = None
+
     # deepinfra api settings
-    deepinfra_text_model: Literal["Llama", "Mixtral"] = "Llama"
+    deepinfra_text_model: Literal["Llama-70b", "Llama-405b"] = "Llama-70b"
     deepinfra_vision_model: Literal["Llama-vision-vision-big", "Llama-vision-small"] = (
         "Llama-vision-vision-big"
     )

@@ -14,8 +14,11 @@ def save_api_config(config_object: ConfigData):
     """
     data = {
         "api_settings": {
+            "gemini_text_model": config_object.api_settings.gemini_text_model,
+            "gemini_vision_model": config_object.api_settings.gemini_vision_model,
             "deepinfra_text_model": config_object.api_settings.deepinfra_text_model,
             "deepinfra_vision_model": config_object.api_settings.deepinfra_vision_model,
+            "gemini_token": config_object.api_settings.gemini_token,
             "deepinfra_token": config_object.api_settings.deepinfra_token,
             "openai_text_model": config_object.api_settings.openai_text_model,
             "openai_vision_model": config_object.api_settings.openai_vision_model,

@@ -12,7 +12,7 @@ from customtkinter import (
     CTkFrame,
     CTkLabel,
     CTkScrollableFrame,
-    Variable,
+    StringVar,
 )
 
 from models.config_data import ConfigData
@@ -39,13 +39,16 @@ class ApiWindow(CTkFrame):
         self._config_data: ConfigData = config_data
 
         # save and load values
-        self._deepinfra_text_model: Variable = Variable()
-        self._deepinfra_vision_model: Variable = Variable()
-        self._deepinfra_api_entry: CTkEntry | None = None
-        self._openai_text_model: Variable = Variable()
-        self._openai_vision_model: Variable = Variable()
-        self._openai_api_entry: CTkEntry | None = None
-        self._deepgram_api_entry: CTkEntry | None = None
+        self._gemini_text_model: StringVar = StringVar()
+        self._gemini_vision_model: StringVar = StringVar()
+        self._gemini_api_entry: CTkEntry
+        self._deepinfra_text_model: StringVar = StringVar()
+        self._deepinfra_vision_model: StringVar = StringVar()
+        self._deepinfra_api_entry: CTkEntry
+        self._openai_text_model: StringVar = StringVar()
+        self._openai_vision_model: StringVar = StringVar()
+        self._openai_api_entry: CTkEntry
+        self._deepgram_api_entry: CTkEntry
 
         # main frames
         scrollable_container: CTkScrollableFrame = CTkScrollableFrame(master=self)
@@ -62,6 +65,7 @@ class ApiWindow(CTkFrame):
         Here are the list of widget functions that are
         use to set them up.
         """
+        self._setup_gemini_settings()
         self._setup_deepinfra_settings()
         self._setup_openai_settings()
         self._setup_deepgram_settings()
@@ -75,6 +79,66 @@ class ApiWindow(CTkFrame):
         CTkButton(
             master=save_frame, text="Save", command=self._save_api_settings_to_config
         ).pack(anchor="e")
+
+    def _setup_gemini_settings(self):
+        """Set up gemini settings widgets."""
+        main_gemini_frame = CTkFrame(self._center_container, width=600, height=180)
+        main_gemini_frame.pack_propagate(False)
+        main_gemini_frame.pack(pady=(0, 20))
+
+        gemini_frame = CTkFrame(main_gemini_frame, fg_color="transparent")
+        gemini_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        CTkLabel(
+            master=gemini_frame,
+            text="Gemini",
+            font=tkinter_font(size=16, weight="bold"),
+        ).pack(anchor="w", pady=(0, 8))
+
+        choose_model_frame = CTkFrame(gemini_frame, fg_color="transparent")
+        choose_model_frame.pack(fill="x")
+        CTkLabel(
+            master=choose_model_frame, text="Text model", font=tkinter_font()
+        ).pack(side="left", anchor="w", pady=(0, 8))
+        CTkComboBox(
+            master=choose_model_frame,
+            values=["Gemini-free"],
+            font=tkinter_font(),
+            variable=self._gemini_text_model,
+        ).pack(anchor="e", pady=(0, 8))
+        self._gemini_text_model.set(
+            value=self._config_data.api_settings.gemini_text_model
+        )
+
+        choose_vision_frame = CTkFrame(gemini_frame, fg_color="transparent")
+        choose_vision_frame.pack(fill="x")
+        CTkLabel(
+            master=choose_vision_frame, text="Vision model", font=tkinter_font()
+        ).pack(side="left", anchor="w", pady=(0, 8))
+        CTkComboBox(
+            master=choose_vision_frame,
+            values=["Gemini-vision-free"],
+            font=tkinter_font(),
+            variable=self._gemini_vision_model,
+        ).pack(anchor="e", pady=(0, 8))
+        self._gemini_vision_model.set(
+            value=self._config_data.api_settings.gemini_vision_model
+        )
+
+        api_token_frame = CTkFrame(gemini_frame, fg_color="transparent")
+        api_token_frame.pack(fill="x")
+        CTkLabel(master=api_token_frame, text="Api Token", font=tkinter_font()).pack(
+            side="left", anchor="w"
+        )
+        self._gemini_api_entry = CTkEntry(
+            master=api_token_frame, placeholder_text="cBSPykAT*****"
+        )
+        self._gemini_api_entry.pack(anchor="e")
+
+        if self._config_data.api_settings.gemini_token:
+            self._gemini_api_entry.insert(
+                0, self._config_data.api_settings.gemini_token
+            )
 
     def _setup_deepinfra_settings(self):
         """Set up deepinfra settings widgets.
@@ -113,7 +177,7 @@ class ApiWindow(CTkFrame):
         ).pack(side="left", anchor="w", pady=(0, 8))
         CTkComboBox(
             master=choose_model_frame,
-            values=["Llama", "Mixtral"],
+            values=["Llama-70b", "LLama-405b", "LLama-70b-Free"],
             font=tkinter_font(),
             variable=self._deepinfra_text_model,
         ).pack(anchor="e", pady=(0, 8))

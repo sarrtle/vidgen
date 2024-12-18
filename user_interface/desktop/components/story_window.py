@@ -146,10 +146,7 @@ class StoryWindow(CTkFrame):
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
         CTkComboBox(
             master=ai_model_frame,
-            values=[
-                "DeepInfra",
-                "Openai",
-            ],
+            values=["DeepInfra", "Openai", "Gemini-free"],
             variable=self._text_model_variable,
             command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(0, 16))
