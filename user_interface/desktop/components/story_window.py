@@ -1,5 +1,6 @@
 """The sidebar content of story section from the sidebar."""
 
+from threading import Thread
 from PIL import Image
 from customtkinter import (
     CTkButton,
@@ -19,11 +20,13 @@ from tkinter import messagebox, filedialog
 
 from typing import Any, override
 
+from utility.generate_text import GenerateText
 from utility.tools import tkinter_font
 from utility.vidgen_api import VidGen
 from models.config_data import ConfigData
 from models.story_window_model import StoryWindowValues
 from utility.config_tools import save_api_config
+
 
 
 class StoryWindow(CTkFrame):
@@ -57,8 +60,8 @@ class StoryWindow(CTkFrame):
         # values get and set
         self._theme_variable: Variable = Variable(value="Horror")
         self._text_model_variable: Variable = Variable(value="DeepInfra")
-        self._idea_entry: CTkEntry | None = None
-        self._context_textbox: CTkTextbox | None = None
+        self._idea_entry: CTkEntry
+        self._context_textbox: CTkTextbox
         self._voice_model_variable: Variable = Variable(value="Arceus")
         self._text_position_variable: Variable = Variable(value="center")
         self._text_font_variable: Variable = Variable(value="default")
@@ -72,6 +75,9 @@ class StoryWindow(CTkFrame):
 
         # image preview widget
         self._image_preview_widget: CTkLabel | None = None
+
+        # control widgets
+        self._generate_idea_button: CTkButton
 
         # setup important functions
         self._setup_containers()
@@ -146,7 +152,7 @@ class StoryWindow(CTkFrame):
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
         CTkComboBox(
             master=ai_model_frame,
-            values=["DeepInfra", "Openai", "Gemini-free"],
+            values=["DeepInfra", "Openai", "Gemini"],
             variable=self._text_model_variable,
             command=lambda _: self._save_story_settings_to_config(),
         ).pack(anchor="e", padx=16, pady=(0, 16))
@@ -169,9 +175,10 @@ class StoryWindow(CTkFrame):
             placeholder_text="Tell me your idea.",
         )
         self._idea_entry.pack(fill="x", padx=16, pady=(0, 8))
-        CTkButton(
+        self._generate_idea_button = CTkButton(
             master=idea_context_frame, text="Generate", command=self._on_generate_idea
-        ).pack(anchor="e", padx=16, pady=(0, 8))
+        )
+        self._generate_idea_button.pack(anchor="e", padx=16, pady=(0, 8))
 
         # Context
         CTkLabel(
@@ -403,6 +410,8 @@ class StoryWindow(CTkFrame):
     # Button commands
     def _on_generate_idea(self):
         """Generate context base on idea."""
+        # disable the button
+        self._generate_idea_button.configure(state="disabled")
         idea_string = self._get_idea_entry_value()
 
         if not idea_string:
@@ -410,6 +419,11 @@ class StoryWindow(CTkFrame):
                 title="No Idea!",
                 message="Please input some idea before clicking generate.",
             )
+        
+        # initialize generate text
+        generate_text = GenerateText(idea=idea_string, config_object=self._config_data, done_callback=self._on_done_generate_idea)
+        thread = Thread(target=generate_text.request)
+        thread.start()
 
     def _on_browse_files(self):
         """Browse all clips inside the assets folder."""
@@ -440,6 +454,28 @@ class StoryWindow(CTkFrame):
         self._stroke_save_schedule = self.after(
             ms=300, func=self._save_story_settings_to_config
         )
+
+    # callbacks
+    def _on_done_generate_idea(self, generated_text: str, error: bool, error_title: str | None, error_message: str | None):
+        """Will call this function after completing the thread process.
+
+        Args:
+            generated_text (str): The generated text from AI API service.
+            error (bool): Indicates if error occurs.
+            error_title (str | None): The title of the error to show.
+            error_message (str | None): The message of the errorto show.
+
+        """
+        # enable the generate idea button again
+        self._generate_idea_button.configure(state="normal")
+
+        if error:
+            messagebox.showerror(title=error_title, message=error_message)
+            return
+        
+        # update the textbox with newly generated text
+        self._context_textbox.delete("1.0", "end")
+        self._context_textbox.insert("1.0", generated_text)
 
     @override
     def pack(self, **kwargs: Any):

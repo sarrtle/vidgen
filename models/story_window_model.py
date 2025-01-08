@@ -9,7 +9,7 @@ class StoryWindowValues:
     """Story window settings configurations."""
 
     theme: Literal["Horror", "Facts"]
-    text_model: Literal["DeepInfra", "Openai"]
+    text_model: Literal["Gemini","DeepInfra", "Openai"]
     idea: str
     context: str
     voice_model: Literal["Arceus", "Luna", "Asteria"]

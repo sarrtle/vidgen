@@ -327,6 +327,10 @@ class ApiWindow(CTkFrame):
     def _save_api_settings_to_config(self):
         """Save API settings to `config.json` local file."""
         # save all values
+        self._config_data.api_settings.gemini_text_model = self._gemini_text_model.get()
+        self._config_data.api_settings.gemini_vision_model = self._gemini_vision_model.get()
+        self._config_data.api_settings.gemini_token = self._gemini_api_entry.get()
+
         self._config_data.api_settings.deepinfra_text_model = (
             self._deepinfra_text_model.get()
         )

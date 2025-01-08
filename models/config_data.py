@@ -33,7 +33,7 @@ class StoryDefaultSettings:
 
     # user settings for story window
     theme: Literal["Horror", "Facts"] = "Horror"
-    text_model: Literal["DeepInfra", "Openai"] = "DeepInfra"
+    text_model: Literal["Gemini","DeepInfra", "Openai"] = "DeepInfra"
     voice_model: Literal["Arceus", "Luna", "Asteria"] = "Arceus"
     font: Literal["default", "Futura", "Monosans"] = "default"
     text_position: Literal["top", "center", "bottom"] = "center"
