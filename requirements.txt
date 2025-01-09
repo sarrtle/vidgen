@@ -3,3 +3,5 @@ moviepy==2.1.1
 pillow==10.4.0
 yt-dlp==2024.11.18
 google-generativeai==0.8.3
+deepgram-sdk==3.8.0
+pygame==2.6.1
