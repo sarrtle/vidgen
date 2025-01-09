@@ -1,10 +1,30 @@
 """All Utility tools for this project."""
 
-from os import listdir
+import hashlib
+from os import listdir, environ, mkdir, remove
+from os.path import isdir, join
 from typing import Any, Callable, Literal
+
+# hide pygame shameless advertisement
+environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
+
 from customtkinter import CTkFont
+from pygame import mixer
 from yt_dlp import YoutubeDL
 
+# initialize mixer for method play_voiceover
+mixer.init()
+
+# create cache folder
+if not isdir("cache"):
+    mkdir("cache")
+
+# delete all files in cache
+# TODO: Have some proper cache handling
+cache_files = listdir("cache/")
+for cache_file in cache_files:
+    cache_file_path = join("cache", cache_file)
+    remove(cache_file_path)
 
 def download_youtube_video(url: str, progress_hook: Callable[[dict[str, Any]], None]):
     """Download a youtube video.
@@ -45,3 +65,30 @@ def human_readable_size(bytes_number: int):
         return f"{bytes_number / 1e3:.2f} KB"
     else:
         return f"{bytes_number} B"
+
+def create_audio_filename(script: str, voice_model_name: str):
+    """Create an audio filename with hash sha256.
+    
+    Converts the whole script into sha256 hexdigits for their
+    unique filenames and easy to retain information.
+    """
+    def create_hash_content(string: str):
+        hash_object = hashlib.sha256(string.encode())
+        content_hash = hash_object.hexdigest()
+        return content_hash
+
+    hash_script = create_hash_content(script)
+    hash_voice_model = create_hash_content(voice_model_name)
+
+    return f"cache/audio_{hash_script}-{hash_voice_model}.mp3"
+
+def play_voiceover(filepath: str) -> None:
+    """Play the voiceover file with pygame.
+    
+    Notes:
+        I have tried multiple libraries, only this
+        one works.
+
+    """
+    mixer.music.load(filepath)
+    mixer.music.play()

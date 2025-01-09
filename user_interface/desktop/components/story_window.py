@@ -1,5 +1,6 @@
 """The sidebar content of story section from the sidebar."""
 
+from os.path import isfile
 from PIL import Image
 from customtkinter import (
     CTkButton,
@@ -19,7 +20,8 @@ from tkinter import messagebox, filedialog
 
 from typing import Any, override
 
-from utility.tools import tkinter_font
+from utility.generate_voice import GenerateVoice
+from utility.tools import create_audio_filename, play_voiceover, tkinter_font
 from utility.vidgen_api import VidGen
 from models.config_data import ConfigData
 from models.story_window_model import StoryWindowValues
@@ -57,9 +59,9 @@ class StoryWindow(CTkFrame):
         # values get and set
         self._theme_variable: Variable = Variable(value="Horror")
         self._text_model_variable: Variable = Variable(value="DeepInfra")
-        self._idea_entry: CTkEntry | None = None
-        self._context_textbox: CTkTextbox | None = None
-        self._voice_model_variable: Variable = Variable(value="Arceus")
+        self._idea_entry: CTkEntry
+        self._context_textbox: CTkTextbox
+        self._voice_model_variable: Variable = Variable(value="aura-arcas-en")
         self._text_position_variable: Variable = Variable(value="center")
         self._text_font_variable: Variable = Variable(value="default")
         self._text_color_variable: Variable = Variable(value="yellow")
@@ -67,11 +69,11 @@ class StoryWindow(CTkFrame):
         self._text_stroke_variable: IntVar = IntVar(value=5)
 
         # left and right container
-        self._left_side_container: CTkFrame | None = None
-        self._right_side_container: CTkFrame | None = None
+        self._left_side_container: CTkFrame
+        self._right_side_container: CTkFrame
 
         # image preview widget
-        self._image_preview_widget: CTkLabel | None = None
+        self._image_preview_widget: CTkLabel
 
         # setup important functions
         self._setup_containers()
@@ -199,7 +201,7 @@ class StoryWindow(CTkFrame):
         ).pack(side="left", anchor="w", padx=16, pady=16)
         CTkComboBox(
             master=voice_model_frame,
-            values=["aura-arceus-en", "aura-luna-en", "aura-asteria-en"],
+            values=["aura-arcas-en", "aura-luna-en", "aura-asteria-en"],
             font=tkinter_font(),
             variable=self._voice_model_variable,
             command=lambda _: self._save_story_settings_to_config(),
@@ -440,6 +442,21 @@ class StoryWindow(CTkFrame):
         self._stroke_save_schedule = self.after(
             ms=300, func=self._save_story_settings_to_config
         )
+
+    # callbacks
+    def _on_voiceover_play(self):
+        """Generate and play voiceover sample."""
+        # get the script context
+        script_context = self._context_textbox.get("1.0", "end")
+        filename = create_audio_filename(script=script_context, voice_model_name=self._config_data.story_settings.voice_model)
+
+        # check if audio is already generated
+        if not isfile(filename):
+            # generate an audio
+            generate_voice = GenerateVoice(script=script_context, config_data=self._config_data)
+            generate_voice.generate()
+        
+        play_voiceover(filepath=filename)
 
     @override
     def pack(self, **kwargs: Any):

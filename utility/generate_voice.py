@@ -5,7 +5,8 @@ from deepgram import DeepgramClient, SpeakOptions
 
 from models.config_data import ConfigData
 
-import hashlib
+
+from utility.tools import create_audio_filename
 
 
 class GenerateVoice:
@@ -22,7 +23,7 @@ class GenerateVoice:
         self._script: str = script
         self._config_data: ConfigData = config_data
 
-    def _generate(self):
+    def generate(self):
         """Generate the voiceover.
 
         Notes:
@@ -33,17 +34,13 @@ class GenerateVoice:
 
         """
         # check if token is valid
-        if self._config_data.api_settings.deepgram_token is None:
+        if not self._config_data.api_settings.deepgram_token:
             messagebox.showerror(title="No deepgram token!", message="Please input deepgram API token first.")
             return
         
         # preparing options and filename
         speak_options = {"text": self._script}
-
-        # generate a unique filename for the audio base on script
-        hash_object = hashlib.sha256(self._script.encode())
-        content_hash = hash_object.hexdigest()
-        filename = f"cache/audio_{content_hash}.mp3"
+        filename = create_audio_filename(script=self._script, voice_model_name=self._config_data.story_settings.voice_model)
 
         # Initialize deepgram
         deepgram = DeepgramClient(api_key=self._config_data.api_settings.deepgram_token)
@@ -55,5 +52,4 @@ class GenerateVoice:
         #   documentation, so watch out from whatever errors here.
 
         # request to the deepgram api sdk
-        response = deepgram.speak.rest.v("1").save(filename, speak_options, options)
-        print(response.to_json(indent=4))
+        deepgram.speak.rest.v("1").save(filename, speak_options, options)

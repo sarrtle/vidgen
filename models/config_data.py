@@ -34,7 +34,7 @@ class StoryDefaultSettings:
     # user settings for story window
     theme: Literal["Horror", "Facts"] = "Horror"
     text_model: Literal["DeepInfra", "Openai"] = "DeepInfra"
-    voice_model: Literal["Arceus", "Luna", "Asteria"] = "Arceus"
+    voice_model: Literal["aura-arcas-en", "aura-luna-en", "aura-asteria-en"] = "aura-asteria-en"
     font: Literal["default", "Futura", "Monosans"] = "default"
     text_position: Literal["top", "center", "bottom"] = "center"
     text_color: Literal["white", "yellow", "violet", "blue"] = "yellow"
