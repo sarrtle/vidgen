@@ -47,8 +47,8 @@ class ApiDefaultSettings:
     """Default settings data for the story window."""
 
     # gemini free model API settings
-    gemini_text_model: Literal["Gemini-free"] = "Gemini-free"
-    gemini_vision_model: Literal["Gemini-vision-free"] = "Gemini-vision-free"
+    gemini_text_model: Literal["gemini-1.5-pro", "gemini-1.5-flash"] = "gemini-1.5-pro"
+    gemini_vision_model: Literal["gemini-1.5-pro", "gemini-1.5-flash"] = "gemini-1.5-pro"
     gemini_token: str | None = None
 
     # deepinfra api settings

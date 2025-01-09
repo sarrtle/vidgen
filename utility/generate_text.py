@@ -41,11 +41,15 @@ class GenerateText:
 
         # intiate and configuregemini
         genai.configure(api_key=self._config_object.api_settings.gemini_token)
-        model = genai.GenerativeModel(model_name="gemini-1.5-pro", system_instruction=self._prompt)
+        model = genai.GenerativeModel(model_name=self._config_object.api_settings.gemini_text_model, system_instruction=self._prompt)
 
         response = model.generate_content(contents="What happened?")
 
         self._done_callback(response.text, False, None, None)
+
+    def _on_no_service(self):
+        """Return proper callback if a model is not yet implemented."""
+        self._done_callback("", True, "No model available!", "This model is not yet implemented")
 
     def request(self):
         """Request to their respective API.
@@ -62,3 +66,8 @@ class GenerateText:
         
         if chosen_service == "Gemini":
             self._on_gemini_service()
+        
+        # if some models are not yet implemented
+        else:
+            self._on_no_service()
+

@@ -102,7 +102,7 @@ class ApiWindow(CTkFrame):
         ).pack(side="left", anchor="w", pady=(0, 8))
         CTkComboBox(
             master=choose_model_frame,
-            values=["Gemini-free"],
+            values=["gemini-1.5-pro", "gemini-1.5-flash"],
             font=tkinter_font(),
             variable=self._gemini_text_model,
         ).pack(anchor="e", pady=(0, 8))
@@ -117,7 +117,7 @@ class ApiWindow(CTkFrame):
         ).pack(side="left", anchor="w", pady=(0, 8))
         CTkComboBox(
             master=choose_vision_frame,
-            values=["Gemini-vision-free"],
+            values=["gemini-1.5-pro", "gemini-1.5-flash"],
             font=tkinter_font(),
             variable=self._gemini_vision_model,
         ).pack(anchor="e", pady=(0, 8))
