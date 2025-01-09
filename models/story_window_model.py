@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 
+
 @dataclass
 class StoryWindowValues:
     """Story window settings configurations."""
@@ -12,7 +13,7 @@ class StoryWindowValues:
     text_model: Literal["DeepInfra", "Openai"]
     idea: str
     context: str
-    voice_model: Literal["Arceus", "Luna", "Asteria"]
+    voice_model: Literal["aura-arceus-en", "aura-luna-en", "aura-asteria-en"]
     text_position: Literal["top", "center", "bottom"]
     text_font: Literal["default", "Futura", "Monosans"]
     text_color: Literal["white", "yellow", "violet", "blue"]

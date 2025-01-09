@@ -199,7 +199,7 @@ class StoryWindow(CTkFrame):
         ).pack(side="left", anchor="w", padx=16, pady=16)
         CTkComboBox(
             master=voice_model_frame,
-            values=["Arceus", "Luna", "Asteria"],
+            values=["aura-arceus-en", "aura-luna-en", "aura-asteria-en"],
             font=tkinter_font(),
             variable=self._voice_model_variable,
             command=lambda _: self._save_story_settings_to_config(),
@@ -207,7 +207,7 @@ class StoryWindow(CTkFrame):
         self._voice_model_variable.set(
             value=self._config_data.story_settings.voice_model
         )
-        CTkButton(master=voice_model_frame, text="Play").pack(
+        CTkButton(master=voice_model_frame, text="Play", command=self._on_voiceover_play).pack(
             anchor="e", padx=16, pady=(8, 16)
         )
 
