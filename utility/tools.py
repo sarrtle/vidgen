@@ -1,12 +1,8 @@
 """All Utility tools for this project."""
 
 import hashlib
-from os import listdir, environ, mkdir, remove
-from os.path import isdir, join
+from os import listdir
 from typing import Any, Callable, Literal
-
-# hide pygame shameless advertisement
-environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 
 from customtkinter import CTkFont
 from pygame import mixer
@@ -14,17 +10,6 @@ from yt_dlp import YoutubeDL
 
 # initialize mixer for method play_voiceover
 mixer.init()
-
-# create cache folder
-if not isdir("cache"):
-    mkdir("cache")
-
-# delete all files in cache
-# TODO: Have some proper cache handling
-cache_files = listdir("cache/")
-for cache_file in cache_files:
-    cache_file_path = join("cache", cache_file)
-    remove(cache_file_path)
 
 def download_youtube_video(url: str, progress_hook: Callable[[dict[str, Any]], None]):
     """Download a youtube video.

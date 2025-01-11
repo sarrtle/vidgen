@@ -411,15 +411,23 @@ class StoryWindow(CTkFrame):
     # Button commands
     def _on_generate_idea(self):
         """Generate context base on idea."""
-        # disable the button
-        self._generate_idea_button.configure(state="disabled")
         idea_string = self._get_idea_entry_value()
 
+        # TODO: REMOVE THIS AFTER MAKING FACTS PROMPT
+        if self._config_data.story_settings.theme == "Facts":
+            messagebox.showwarning(title="Warning", message="This theme is not yet implemented. Please choose Horror theme.")
+            return
+        
+        # Show warning if no idea input
         if not idea_string:
             messagebox.showwarning(
                 title="No Idea!",
                 message="Please input some idea before clicking generate.",
             )
+            return
+
+        # disable the button
+        self._generate_idea_button.configure(state="disabled")
         
         # initialize generate text
         generate_text = GenerateText(idea=idea_string, config_object=self._config_data, done_callback=self._on_done_generate_idea)
@@ -480,17 +488,28 @@ class StoryWindow(CTkFrame):
 
     def _on_voiceover_play(self):
         """Generate and play voiceover sample."""
+        # check deepgram valid token
+        if not self._config_data.api_settings.deepgram_token:
+            messagebox.showerror(title="No deepgram token!", message="Please input deepgram API token first.")
+            return
+
         # get the script context
-        script_context = self._context_textbox.get("1.0", "end")
+        script_context = self._context_textbox.get("1.0", "end").strip()
+        if not script_context:
+            messagebox.showerror(title="Error", message="Please input your story context first or generate from idea.")
+            return
+
         filename = create_audio_filename(script=script_context, voice_model_name=self._config_data.story_settings.voice_model)
 
         # check if audio is already generated
+        is_voice_generated = True
         if not isfile(filename):
             # generate an audio
             generate_voice = GenerateVoice(script=script_context, config_data=self._config_data)
-            generate_voice.generate()
-        
-        play_voiceover(filepath=filename)
+            is_voice_generated = generate_voice.generate()
+        print(is_voice_generated)
+        if is_voice_generated:
+            play_voiceover(filepath=filename)
 
     @override
     def pack(self, **kwargs: Any):
