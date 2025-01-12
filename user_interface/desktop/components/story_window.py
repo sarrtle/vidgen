@@ -29,7 +29,6 @@ from models.story_window_model import StoryWindowValues
 from utility.config_tools import save_api_config
 
 
-
 class StoryWindow(CTkFrame):
     """Story window contents."""
 
@@ -215,9 +214,9 @@ class StoryWindow(CTkFrame):
         self._voice_model_variable.set(
             value=self._config_data.story_settings.voice_model
         )
-        CTkButton(master=voice_model_frame, text="Play", command=self._on_voiceover_play).pack(
-            anchor="e", padx=16, pady=(8, 16)
-        )
+        CTkButton(
+            master=voice_model_frame, text="Play", command=self._on_voiceover_play
+        ).pack(anchor="e", padx=16, pady=(8, 16))
 
     def _setup_video_options_settings(self):
         """Set up video options widgets."""
@@ -413,11 +412,6 @@ class StoryWindow(CTkFrame):
         """Generate context base on idea."""
         idea_string = self._get_idea_entry_value()
 
-        # TODO: REMOVE THIS AFTER MAKING FACTS PROMPT
-        if self._config_data.story_settings.theme == "Facts":
-            messagebox.showwarning(title="Warning", message="This theme is not yet implemented. Please choose Horror theme.")
-            return
-        
         # Show warning if no idea input
         if not idea_string:
             messagebox.showwarning(
@@ -428,9 +422,13 @@ class StoryWindow(CTkFrame):
 
         # disable the button
         self._generate_idea_button.configure(state="disabled")
-        
+
         # initialize generate text
-        generate_text = GenerateText(idea=idea_string, config_object=self._config_data, done_callback=self._on_done_generate_idea)
+        generate_text = GenerateText(
+            idea=idea_string,
+            config_object=self._config_data,
+            done_callback=self._on_done_generate_idea,
+        )
         thread = Thread(target=generate_text.request)
         thread.start()
 
@@ -465,7 +463,13 @@ class StoryWindow(CTkFrame):
         )
 
     # callbacks
-    def _on_done_generate_idea(self, generated_text: str, error: bool, error_title: str | None, error_message: str | None):
+    def _on_done_generate_idea(
+        self,
+        generated_text: str,
+        error: bool,
+        error_title: str | None,
+        error_message: str | None,
+    ):
         """Will call this function after completing the thread process.
 
         Args:
@@ -481,7 +485,7 @@ class StoryWindow(CTkFrame):
         if error:
             messagebox.showerror(title=error_title, message=error_message)
             return
-        
+
         # update the textbox with newly generated text
         self._context_textbox.delete("1.0", "end")
         self._context_textbox.insert("1.0", generated_text)
@@ -490,24 +494,34 @@ class StoryWindow(CTkFrame):
         """Generate and play voiceover sample."""
         # check deepgram valid token
         if not self._config_data.api_settings.deepgram_token:
-            messagebox.showerror(title="No deepgram token!", message="Please input deepgram API token first.")
+            messagebox.showerror(
+                title="No deepgram token!",
+                message="Please input deepgram API token first.",
+            )
             return
 
         # get the script context
         script_context = self._context_textbox.get("1.0", "end").strip()
         if not script_context:
-            messagebox.showerror(title="Error", message="Please input your story context first or generate from idea.")
+            messagebox.showerror(
+                title="Error",
+                message="Please input your story context first or generate from idea.",
+            )
             return
 
-        filename = create_audio_filename(script=script_context, voice_model_name=self._config_data.story_settings.voice_model)
+        filename = create_audio_filename(
+            script=script_context,
+            voice_model_name=self._config_data.story_settings.voice_model,
+        )
 
         # check if audio is already generated
         is_voice_generated = True
         if not isfile(filename):
             # generate an audio
-            generate_voice = GenerateVoice(script=script_context, config_data=self._config_data)
+            generate_voice = GenerateVoice(
+                script=script_context, config_data=self._config_data
+            )
             is_voice_generated = generate_voice.generate()
-        print(is_voice_generated)
         if is_voice_generated:
             play_voiceover(filepath=filename)
 
