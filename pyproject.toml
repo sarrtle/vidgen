@@ -6,3 +6,4 @@ reportUnusedCallResult = false
 reportAny = false
 reportExplicitAny = false
 reportUnknownArgumentType = false
+reportAttributeAccessIssue = false

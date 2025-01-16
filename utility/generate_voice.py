@@ -1,7 +1,16 @@
 """Voice generation module."""
 
 from tkinter import messagebox
-from deepgram import DeepgramApiError, DeepgramApiKeyError, DeepgramClient, DeepgramUnknownApiError, SpeakOptions
+from typing import Any
+from deepgram import (
+    DeepgramApiError,
+    DeepgramApiKeyError,
+    DeepgramClient,
+    DeepgramUnknownApiError,
+    FileSource,
+    PrerecordedOptions,
+    SpeakOptions,
+)
 
 from models.config_data import ConfigData
 
@@ -23,6 +32,28 @@ class GenerateVoice:
         self._script: str = script
         self._config_data: ConfigData = config_data
 
+    def transcript(self) -> Any:
+        """Transcript the audio into text data format."""
+        # get current audio file name
+        filepath = create_audio_filename(
+            script=self._script,
+            voice_model_name=self._config_data.story_settings.voice_model,
+        )
+
+        # open audio file as bytes
+        with open(filepath, "rb") as file:
+            buffer_data = file.read()
+
+        # initialize deepgram
+        deepgram = DeepgramClient()
+        payload: FileSource = {"buffer": buffer_data}
+        options = PrerecordedOptions(model="nova-2", smart_format=True)
+
+        # request to sdk api
+        response = deepgram.listen.rest.v("1").transcribe_file(payload, options)
+
+        return response.to_json(indent=4)
+
     def generate(self) -> bool:
         """Generate the voiceover.
 
@@ -38,14 +69,17 @@ class GenerateVoice:
         """
         # preparing options and filename
         speak_options = {"text": self._script}
-        filename = create_audio_filename(script=self._script, voice_model_name=self._config_data.story_settings.voice_model)
+        filename = create_audio_filename(
+            script=self._script,
+            voice_model_name=self._config_data.story_settings.voice_model,
+        )
 
         # Initialize deepgram
         deepgram = DeepgramClient(api_key=self._config_data.api_settings.deepgram_token)
 
         # choose model
         options = SpeakOptions(model=self._config_data.story_settings.voice_model)
-        
+
         # WARNING AND TODO: catch more error for deepgram error
 
         # request to the deepgram api sdk

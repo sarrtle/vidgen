@@ -269,7 +269,7 @@ class ClipsWindow(CTkFrame):
         # load image
         vidgen = VidGen()
         clip_path = join("assets/clips/", widget.cget("text"))
-        vidgen.load_video(clip_path)
+        vidgen.load_background_video(clip_path)
         image_bytes = vidgen.get_render_image()
         vidgen.close()
         thumbnail = CTkImage(

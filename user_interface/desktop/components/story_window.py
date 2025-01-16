@@ -97,7 +97,7 @@ class StoryWindow(CTkFrame):
             fill="both", expand=True, padx=24, pady=(24, 16)
         )
 
-        CTkButton(master=self, text="Render Video").pack(
+        CTkButton(master=self, text="Render Video", command=self._on_render_video).pack(
             anchor="e", padx=24, pady=(8, 16)
         )
 
@@ -443,11 +443,65 @@ class StoryWindow(CTkFrame):
             return
 
         self._clip_path = clip
-        self._video_file_clip.load_video(self._clip_path)
+        self._video_file_clip.load_background_video(self._clip_path)
 
         # load image preview
         image = self._video_file_clip.get_render_image()
         self._load_preview_image(image=image)
+
+    def _on_voiceover_play(self):
+        """Generate and play voiceover sample."""
+        # check deepgram valid token
+        if not self._config_data.api_settings.deepgram_token:
+            messagebox.showerror(
+                title="No deepgram token!",
+                message="Please input deepgram API token first.",
+            )
+            return
+
+        # get the script context
+        script_context = self._context_textbox.get("1.0", "end").strip()
+        if not script_context:
+            messagebox.showerror(
+                title="Error",
+                message="Please input your story context first or generate from idea.",
+            )
+            return
+
+        filename = create_audio_filename(
+            script=script_context,
+            voice_model_name=self._config_data.story_settings.voice_model,
+        )
+
+        # check if audio is already generated
+        is_voice_generated = True
+        if not isfile(filename):
+            # generate an audio
+            generate_voice = GenerateVoice(
+                script=script_context, config_data=self._config_data
+            )
+            is_voice_generated = generate_voice.generate()
+        if is_voice_generated:
+            play_voiceover(filepath=filename)
+
+    def _on_render_video(self):
+        """Render video from story settings.
+
+        Pseudocode:
+            - once render button click, open a toplevel window.
+            - render the video with moviepy on thread processing.
+            - show ongoing process info on the topelevel window.
+
+        """
+        # get the script context and
+        # check script content if empty for validation
+        script_context = self._context_textbox.get("1.0", "end").strip()
+        if not script_context:
+            messagebox.showerror(
+                title="Error",
+                message="Please input your story context first or generate from idea.",
+            )
+            return
 
     # events
     def _on_text_stroke_slider_event(self):
@@ -489,41 +543,6 @@ class StoryWindow(CTkFrame):
         # update the textbox with newly generated text
         self._context_textbox.delete("1.0", "end")
         self._context_textbox.insert("1.0", generated_text)
-
-    def _on_voiceover_play(self):
-        """Generate and play voiceover sample."""
-        # check deepgram valid token
-        if not self._config_data.api_settings.deepgram_token:
-            messagebox.showerror(
-                title="No deepgram token!",
-                message="Please input deepgram API token first.",
-            )
-            return
-
-        # get the script context
-        script_context = self._context_textbox.get("1.0", "end").strip()
-        if not script_context:
-            messagebox.showerror(
-                title="Error",
-                message="Please input your story context first or generate from idea.",
-            )
-            return
-
-        filename = create_audio_filename(
-            script=script_context,
-            voice_model_name=self._config_data.story_settings.voice_model,
-        )
-
-        # check if audio is already generated
-        is_voice_generated = True
-        if not isfile(filename):
-            # generate an audio
-            generate_voice = GenerateVoice(
-                script=script_context, config_data=self._config_data
-            )
-            is_voice_generated = generate_voice.generate()
-        if is_voice_generated:
-            play_voiceover(filepath=filename)
 
     @override
     def pack(self, **kwargs: Any):

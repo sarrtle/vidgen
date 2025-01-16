@@ -3,6 +3,7 @@
 import hashlib
 from os import listdir
 from typing import Any, Callable, Literal
+from datetime import datetime
 
 from customtkinter import CTkFont
 from pygame import mixer
@@ -10,6 +11,7 @@ from yt_dlp import YoutubeDL
 
 # initialize mixer for method play_voiceover
 mixer.init()
+
 
 def download_youtube_video(url: str, progress_hook: Callable[[dict[str, Any]], None]):
     """Download a youtube video.
@@ -51,25 +53,57 @@ def human_readable_size(bytes_number: int):
     else:
         return f"{bytes_number} B"
 
-def create_audio_filename(script: str, voice_model_name: str):
+
+def create_hash_content(string: str):
+    hash_object = hashlib.sha256(string.encode())
+    content_hash = hash_object.hexdigest()
+    return content_hash
+
+
+def create_audio_filename(script: str, voice_model_name: str) -> str:
     """Create an audio filename with hash sha256.
-    
+
     Converts the whole script into sha256 hexdigits for their
     unique filenames and easy to retain information.
-    """
-    def create_hash_content(string: str):
-        hash_object = hashlib.sha256(string.encode())
-        content_hash = hash_object.hexdigest()
-        return content_hash
 
+    Args:
+        script (str): The generated or pasted script context.
+        voice_model_name: The deepgram voice model name.
+
+    Returns:
+        str: The generated filepath
+
+    """
     hash_script = create_hash_content(script)
     hash_voice_model = create_hash_content(voice_model_name)
 
     return f"cache/audio_{hash_script}-{hash_voice_model}.mp3"
 
+
+def create_video_filename(filepath: str) -> str:
+    """Create a video filename with hash sha256.
+
+    Arts:
+        filepath (str): The video file path.
+
+    Returns:
+        str: The generated filepath.
+
+    """
+    hash_video_file_path = create_hash_content(filepath)
+    now = datetime.now()
+
+    timestamp = now.strftime("%Y-%m-%d-%H-%M-%S")
+
+    return f"video/video_{hash_video_file_path}-{timestamp}.mp4"
+
+
 def play_voiceover(filepath: str) -> None:
     """Play the voiceover file with pygame.
-    
+
+    Args:
+        filepath (str): The path of the audio.
+
     Notes:
         I have tried multiple libraries, only this
         one works.
