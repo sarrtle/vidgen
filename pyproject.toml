@@ -7,3 +7,4 @@ reportAny = false
 reportExplicitAny = false
 reportUnknownArgumentType = false
 reportAttributeAccessIssue = false
+reportUnknownParameterType = false

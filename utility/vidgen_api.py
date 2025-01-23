@@ -2,8 +2,10 @@
 
 from collections.abc import Callable
 from PIL import ImageFont, Image
+from customtkinter import CTkLabel, Variable
 from moviepy import (
     AudioClip,
+    AudioFileClip,
     CompositeAudioClip,
     CompositeVideoClip,
     ImageClip,
@@ -12,6 +14,7 @@ from moviepy import (
 )
 
 from exceptions.vid_gen_exceptions import NoVideoFileCLip
+from utility.custom_render_logger import CustomMoviepyLogger
 from utility.tools import create_video_filename
 
 
@@ -19,7 +22,13 @@ class VidGen:
     """The object to reuse and edit the video before rendering.
 
     Attributes:
-        empty-yet
+        video_width (int): The width of the video.
+        video_height (int): The height of the video.
+        center_position_x (float): The x position of the text.
+        center_position_y (float): The y position of the text.
+        font_size (int): The font size of the text.
+        font (str): The font path of the text.
+        font_object (ImageFont.FreeTypeFont): The font object of the text.
 
     Methods:
         load_video: Lazily load the video into moviepy.
@@ -36,19 +45,19 @@ class VidGen:
 
         """
         # video properties
-        self._video_file_clip: VideoFileClip
-        self._video_height: int = 1920
-        self._video_width: int = 1080
+        self._video_file_clip: VideoFileClip | None = None
+        self.video_height: int = 1920
+        self.video_width: int = 1080
 
         # text positioning
-        self._center_position_x: float = self._video_width // 2
-        self._center_position_y: float = self._video_height // 2
+        self.center_position_x: float = self.video_width // 2
+        self.center_position_y: float = self.video_height // 2
 
         # text manipulation
-        self._font_size: int = 80
-        self._font: str = self.load_font()
-        self._font_object: ImageFont.FreeTypeFont = ImageFont.truetype(
-            font=self._font, size=self._font_size
+        self.font_size: int = 80
+        self.font: str = self.load_font()
+        self.font_object: ImageFont.FreeTypeFont = ImageFont.truetype(
+            font=self.font, size=self.font_size
         )
 
         # clips
@@ -64,6 +73,10 @@ class VidGen:
 
         """
         self._video_file_clip = VideoFileClip(filepath)
+
+    def is_background_video_loaded(self) -> bool:
+        """Check if the video is loaded."""
+        return self._video_file_clip is not None
 
     def load_font(self, default: bool = True, filepath: str | None = None) -> str:
         """Load font to be use in the video."""
@@ -98,7 +111,7 @@ class VidGen:
 
         return image
 
-    def add_text_clip(self, text_clip: TextClip) -> None:
+    def add_text_clip(self, text_clip: TextClip | list[TextClip]) -> None:
         """Add text clip to Vidgen.
 
         Notes:
@@ -106,9 +119,13 @@ class VidGen:
             edited before adding to Vidgen.
 
         """
-        self._text_clips.append(text_clip)
+        (
+            self._text_clips.append(text_clip)
+            if isinstance(text_clip, TextClip)
+            else self._text_clips.extend(text_clip)
+        )
 
-    def add_audio(self, audio_clip: AudioClip) -> None:
+    def add_audio(self, audio_clip: AudioFileClip | list[AudioFileClip]) -> None:
         """Add audio clip to Vidgen.
 
         Notes:
@@ -116,9 +133,13 @@ class VidGen:
             edited before adding to Vidgen.
 
         """
-        self._audio_clips.append(audio_clip)
+        (
+            self._audio_clips.append(audio_clip)
+            if isinstance(audio_clip, AudioClip)
+            else self._audio_clips.extend(audio_clip)
+        )
 
-    def add_image_clip(self, image_clip: ImageClip) -> None:
+    def add_image_clip(self, image_clip: ImageClip | list[ImageClip]) -> None:
         """Add image clip to Vidgen.
 
         Notes:
@@ -126,9 +147,21 @@ class VidGen:
             edited before adding to Vidgen.
 
         """
-        self._image_clips.append(image_clip)
+        (
+            self._image_clips.append(image_clip)
+            if isinstance(image_clip, ImageClip)
+            else self._image_clips.extend(image_clip)
+        )
 
-    def render(self, custom_callback: Callable[[str, str], None]) -> None:
+    def get_video_filepath(self) -> str:
+        """Get video filepath."""
+        return (
+            create_video_filename(self._video_file_clip.filename)
+            if self._video_file_clip
+            else ""
+        )
+
+    def render(self, custom_callback: CustomMoviepyLogger) -> None:
         """Render the the clips into video.
 
         Args:
@@ -136,8 +169,8 @@ class VidGen:
                 for rendering process.
 
         Notes:
-            `custom_callback` takes 2 integer parameters, `current_frame`
-            and `total_frame`
+            `custom_callback` takes 2 integer parameters,
+            `current_frame` and `total_frame`
 
         """
         # add clips
@@ -147,22 +180,23 @@ class VidGen:
         final_clip = CompositeVideoClip(
             clips=[self._video_file_clip] + self._image_clips + self._text_clips
         )
-        audio_clip = CompositeAudioClip(clips=[self._audio_clips])
+        audio_clip = CompositeAudioClip(clips=self._audio_clips)
+        video_duration = audio_clip.duration + 1
 
         # set audio
         final_clip = final_clip.with_audio(audio_clip)
+        final_clip = final_clip.with_duration(video_duration)
 
         # render
         # TODO:
         #    Indicator for the rendering process.
-        filename = create_video_filename(self._video_file_clip.filename)
+        filename = self.get_video_filepath()
         final_clip.write_videofile(
             filename,
-            fps=24,
+            fps=30,
             audio_codec="aac",
             preset="fast",
-            progress_bar=False,
-            progress=custom_callback,
+            logger=custom_callback,
         )
 
     def close(self) -> None:

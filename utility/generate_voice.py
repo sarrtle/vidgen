@@ -1,5 +1,7 @@
 """Voice generation module."""
 
+import json
+from os.path import isfile
 from tkinter import messagebox
 from typing import Any
 from deepgram import (
@@ -40,19 +42,23 @@ class GenerateVoice:
             voice_model_name=self._config_data.story_settings.voice_model,
         )
 
+        # check if exists, or generate
+        if not isfile(filepath):
+            self.generate()
+
         # open audio file as bytes
         with open(filepath, "rb") as file:
             buffer_data = file.read()
 
         # initialize deepgram
-        deepgram = DeepgramClient()
+        deepgram = DeepgramClient(api_key=self._config_data.api_settings.deepgram_token)
         payload: FileSource = {"buffer": buffer_data}
         options = PrerecordedOptions(model="nova-2", smart_format=True)
 
         # request to sdk api
         response = deepgram.listen.rest.v("1").transcribe_file(payload, options)
 
-        return response.to_json(indent=4)
+        return json.loads(response.to_json(indent=4))
 
     def generate(self) -> bool:
         """Generate the voiceover.

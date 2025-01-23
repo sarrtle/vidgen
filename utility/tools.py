@@ -95,7 +95,7 @@ def create_video_filename(filepath: str) -> str:
 
     timestamp = now.strftime("%Y-%m-%d-%H-%M-%S")
 
-    return f"video/video_{hash_video_file_path}-{timestamp}.mp4"
+    return f"videos/video_{hash_video_file_path}-{timestamp}.mp4"
 
 
 def play_voiceover(filepath: str) -> None:

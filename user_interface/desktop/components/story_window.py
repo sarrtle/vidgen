@@ -1,6 +1,7 @@
 """The sidebar content of story section from the sidebar."""
 
 from os.path import isfile
+from platform import system
 from tkinter import messagebox, filedialog
 from typing import Any, override
 from threading import Thread
@@ -13,15 +14,18 @@ from customtkinter import (
     CTkFrame,
     CTkImage,
     CTkLabel,
+    CTkProgressBar,
     CTkScrollableFrame,
     CTkSlider,
     CTkTextbox,
+    CTkToplevel,
     IntVar,
     Variable,
 )
 
 from utility.generate_text import GenerateText
 from utility.generate_voice import GenerateVoice
+from utility.render_story import RenderStory
 from utility.tools import create_audio_filename, play_voiceover, tkinter_font
 from utility.vidgen_api import VidGen
 from models.config_data import ConfigData
@@ -78,6 +82,9 @@ class StoryWindow(CTkFrame):
 
         # control widgets
         self._generate_idea_button: CTkButton
+        self._render_progress_variable: Variable = Variable(value=0)
+        self._progress_label_indicator: CTkLabel
+        self._render_close_button: CTkButton
 
         # setup important functions
         self._setup_containers()
@@ -485,14 +492,7 @@ class StoryWindow(CTkFrame):
             play_voiceover(filepath=filename)
 
     def _on_render_video(self):
-        """Render video from story settings.
-
-        Pseudocode:
-            - once render button click, open a toplevel window.
-            - render the video with moviepy on thread processing.
-            - show ongoing process info on the topelevel window.
-
-        """
+        """Render video from story settings."""
         # get the script context and
         # check script content if empty for validation
         script_context = self._context_textbox.get("1.0", "end").strip()
@@ -502,6 +502,77 @@ class StoryWindow(CTkFrame):
                 message="Please input your story context first or generate from idea.",
             )
             return
+
+        # check if clip loaded
+        if not self._video_file_clip.is_background_video_loaded():
+            messagebox.showerror(
+                title="Error",
+                message="Please load a background video first.",
+            )
+            return
+
+        # create a top level window
+        render_video_window = CTkToplevel(self)
+        render_video_window.geometry("400x130")
+        render_video_window.title("Rendering video")
+
+        # make the window float on LINUX
+        # mainly some of the window managers that needs it
+        if system() == "Linux":
+            render_video_window.attributes("-type", "dialog")
+
+        # ensure always on top
+        render_video_window.attributes("-topmost", True)
+
+        # main container
+        main_container = CTkFrame(master=render_video_window, fg_color="transparent")
+        main_container.pack(padx=20, pady=20, fill="both", expand=True)
+
+        filepath = "Rendering video - "
+        filepath_label = CTkLabel(
+            master=main_container,
+            text=filepath,
+            font=tkinter_font(weight="bold"),
+        )
+        filepath_label.pack(anchor="w")
+
+        # progress bar
+        progress_frame = CTkFrame(master=main_container, fg_color="transparent")
+        progress_frame.pack(fill="x", pady=(0, 4))
+        progress_bar = CTkProgressBar(
+            master=progress_frame,
+            mode="determinate",
+            variable=self._render_progress_variable,
+        )
+        progress_bar.pack(anchor="w", fill="x", side="left", expand=True)
+        self._progress_label_indicator = CTkLabel(master=progress_frame, text="0/?")
+        self._progress_label_indicator.pack()
+
+        # I need to pass the _render_progress_variable and
+        # _progress_label_indicator to the callback logger
+
+        self._render_close_button = CTkButton(
+            master=main_container, text="Close", state="disabled"
+        )
+        self._render_close_button.pack(anchor="se")
+
+        # render moviepy on thread here
+        render_story = RenderStory(
+            script=script_context,
+            config_data=self._config_data,
+            vidgen_object=self._video_file_clip,
+            progress_bar_variable=self._render_progress_variable,
+            progress_label_variable=self._progress_label_indicator,
+            done_callback=self.on_done_rendering_video,
+        )
+
+        # get filename and update label
+        filename = self._video_file_clip.get_video_filepath()
+        filepath_label.configure(text=f"Rendering video - {filename[:20]}...")
+
+        # render on thread
+        thread = Thread(target=render_story.render)
+        thread.start()
 
     # events
     def _on_text_stroke_slider_event(self):
@@ -543,6 +614,10 @@ class StoryWindow(CTkFrame):
         # update the textbox with newly generated text
         self._context_textbox.delete("1.0", "end")
         self._context_textbox.insert("1.0", generated_text)
+
+    def on_done_rendering_video(self):
+        """Call this function when rendering the video is done."""
+        self._render_close_button.configure(state="normal")
 
     @override
     def pack(self, **kwargs: Any):
