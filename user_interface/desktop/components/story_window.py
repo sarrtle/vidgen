@@ -22,7 +22,9 @@ from customtkinter import (
     IntVar,
     Variable,
 )
+from moviepy import AudioFileClip
 
+from exceptions.vid_gen_exceptions import NoAudioFileClip, NoVideoFileClip
 from utility.generate_text import GenerateText
 from utility.generate_voice import GenerateVoice
 from utility.render_story import RenderStory
@@ -248,9 +250,9 @@ class StoryWindow(CTkFrame):
             text="Randomize position",
             font=tkinter_font(16, "bold"),
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
-        CTkButton(master=randomize_frame, text="randomize").pack(
-            anchor="e", padx=16, pady=(0, 16)
-        )
+        CTkButton(
+            master=randomize_frame, text="randomize", command=self._on_randomize_clip
+        ).pack(anchor="e", padx=16, pady=(0, 16))
 
         # text font
         text_font_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
@@ -462,8 +464,20 @@ class StoryWindow(CTkFrame):
                 script=script_context, config_data=self._config_data
             )
             is_voice_generated = generate_voice.generate()
-        if is_voice_generated:
-            play_voiceover(filepath=filename)
+
+        if not is_voice_generated:
+            messagebox.showerror(
+                title="Error",
+                message="Failed to generate voiceover. Please try again.",
+            )
+            return
+
+        # load audio file to vidgen audio clips
+        audio_clip = AudioFileClip(filename)
+        self._video_file_clip.add_audio(audio_clip)
+
+        # play audio preview
+        play_voiceover(filepath=filename)
 
     def _on_render_video(self):
         """Render video from story settings."""
@@ -543,7 +557,7 @@ class StoryWindow(CTkFrame):
             vidgen_object=self._video_file_clip,
             progress_bar_variable=self._render_progress_variable,
             progress_label_variable=self._progress_label_indicator,
-            done_callback=self.on_done_rendering_video,
+            done_callback=self._on_done_rendering_video,
         )
 
         # get filename and update label
@@ -602,9 +616,45 @@ class StoryWindow(CTkFrame):
         self._context_textbox.delete("1.0", "end")
         self._context_textbox.insert("1.0", generated_text)
 
-    def on_done_rendering_video(self):
+    def _on_done_rendering_video(self):
         """Call this function when rendering the video is done."""
         self._render_close_button.configure(state="normal")
+
+    def _on_randomize_clip(self):
+        """Randomize the position of the clip."""
+        script = self._context_textbox.get("1.0", "end").strip()
+
+        # check deepgram and valid token
+        # TODO: Make this dynamic and avoid DRY with method @_on_voiceover_play
+        if not self._config_data.api_settings.deepgram_token:
+            messagebox.showerror(
+                title="No deepgram token!",
+                message="Please input deepgram API token first.",
+            )
+            return
+        if not script:
+            messagebox.showerror(
+                title="Error",
+                message="Please input your story context first or generate from idea.",
+            )
+            return
+
+        try:
+            self._video_file_clip.randomize_clip_position(
+                script=script, config_data=self._config_data
+            )
+        except NoVideoFileClip:
+            messagebox.showerror(title="Error", message="Please load video first.")
+            return
+        except NoAudioFileClip:
+            messagebox.showerror(
+                title="Error", message="There is a problem loading audio."
+            )
+            return
+
+        # load image preview
+        image = self._video_file_clip.get_render_image()
+        self._load_preview_image(image=image)
 
     @override
     def pack(self, **kwargs: Any):

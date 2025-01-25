@@ -1,7 +1,8 @@
 """All API for generating the video."""
 
 from os import mkdir
-from os.path import isdir
+from os.path import isdir, isfile
+from random import uniform
 from PIL import ImageFont, Image
 from moviepy import (
     AudioClip,
@@ -13,9 +14,11 @@ from moviepy import (
     VideoFileClip,
 )
 
-from exceptions.vid_gen_exceptions import NoVideoFileCLip
+from exceptions.vid_gen_exceptions import NoAudioFileClip, NoVideoFileClip
+from models.config_data import ConfigData
 from utility.custom_render_logger import CustomMoviepyLogger
-from utility.tools import create_video_filename
+from utility.generate_voice import GenerateVoice
+from utility.tools import create_audio_filename, create_video_filename
 
 
 class VidGen:
@@ -46,6 +49,7 @@ class VidGen:
         """
         # video properties
         self._video_file_clip: VideoFileClip | None = None
+        self._original_video_file_clip: VideoFileClip | None = None
         self.video_height: int = 1920
         self.video_width: int = 1080
 
@@ -74,6 +78,65 @@ class VidGen:
         """
         self._video_file_clip = VideoFileClip(filepath)
 
+        # create a copy of the original
+        self._original_video_file_clip = self._video_file_clip.copy()
+
+    def randomize_clip_position(self, script: str, config_data: ConfigData):
+        """Randomize the position of the clip.
+
+        Args:
+            script (str): The generated or pasted script context story.
+                This is needed to generate audio if not generated yet.
+            voice_model_name (str): The deepgram voice model name.
+            config_data (models.ConfigData): The project configurations.
+
+        Raises:
+            NoVideoFileClip: If the video is not loaded.
+            NoAudioFileClip: If the audio is not generated yet.
+
+        """
+        # check if video is loaded
+        if not self._original_video_file_clip:
+            raise NoVideoFileClip
+
+        # calculate the random position
+        # get the duration of the background video
+        clip_duration = self._original_video_file_clip.duration
+
+        # check if audio clip is generated
+        if not self._audio_clips:
+            filename = create_audio_filename(
+                script=script, voice_model_name=config_data.story_settings.voice_model
+            )
+
+            # check if exists
+            if not isfile(filename):
+                # generate voiceover if no generated yet
+                generate_voice = GenerateVoice(script=script, config_data=config_data)
+                generated = generate_voice.generate()
+                if not generated:
+                    raise NoAudioFileClip
+
+            audio_clip = AudioFileClip(filename)
+            self._audio_clips.append(audio_clip)
+
+        # get the duration of the audio
+        # assuming the first audio in the clip is the voiceover
+        # not some chunked audio clips
+        # this may be change in the future if there are multiple audio
+        # and the audio clip for this story video will be put on voiceover variable
+        audio_duration = self._audio_clips[0].duration
+
+        max_start_time = clip_duration - audio_duration
+
+        # get the random clip position
+        random_clip_start_time = uniform(0, max_start_time)
+
+        # apply to the video file clip
+        self._video_file_clip = self._original_video_file_clip.subclipped(
+            random_clip_start_time, random_clip_start_time + audio_duration
+        )
+
     def is_background_video_loaded(self) -> bool:
         """Check if the video is loaded."""
         return self._video_file_clip is not None
@@ -100,7 +163,7 @@ class VidGen:
 
         """
         if not self._video_file_clip:
-            raise NoVideoFileCLip
+            raise NoVideoFileClip
 
         seconds = 2
         frame = self._video_file_clip.get_frame(
