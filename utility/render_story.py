@@ -56,8 +56,8 @@ class RenderStory:
         # unpack vidgen parameters
         self._video_width: int = self._vidgen_object.video_width
         self._video_height: int = self._vidgen_object.video_height
-        self.x_center: float = self._vidgen_object.center_position_x
-        self.y_center: float = self._vidgen_object.center_position_y
+        self._x_center: float = self._vidgen_object.center_position_x
+        self._y_center: float = self._vidgen_object.center_position_y
         self._font: str = self._vidgen_object.font
         self._font_object: FreeTypeFont = self._vidgen_object.font_object
 
