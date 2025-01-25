@@ -67,7 +67,6 @@ class StoryWindow(CTkFrame):
         self._idea_entry: CTkEntry
         self._context_textbox: CTkTextbox
         self._voice_model_variable: Variable = Variable(value="aura-arcas-en")
-        self._text_position_variable: Variable = Variable(value="center")
         self._text_font_variable: Variable = Variable(value="default")
         self._text_color_variable: Variable = Variable(value="yellow")
         self._text_style_variable: Variable = Variable(value="3 words")
@@ -253,27 +252,6 @@ class StoryWindow(CTkFrame):
             anchor="e", padx=16, pady=(0, 16)
         )
 
-        # text position
-        text_position_frame = CTkFrame(
-            master=video_options_frame, fg_color="transparent"
-        )
-        text_position_frame.pack(fill="x", expand=True)
-        CTkLabel(
-            master=text_position_frame,
-            text="Text position",
-            font=tkinter_font(16, "bold"),
-        ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
-        CTkComboBox(
-            master=text_position_frame,
-            values=["top", "center", "bottom"],
-            font=tkinter_font(),
-            variable=self._text_position_variable,
-            command=lambda _: self._save_story_settings_to_config(),
-        ).pack(anchor="e", padx=16, pady=(0, 16))
-        self._text_position_variable.set(
-            value=self._config_data.story_settings.text_position
-        )
-
         # text font
         text_font_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
         text_font_frame.pack(fill="x", expand=True)
@@ -370,7 +348,6 @@ class StoryWindow(CTkFrame):
             idea=self._get_idea_entry_value(),
             context=self._get_context_textbox_value(),
             voice_model=self._voice_model_variable.get(),
-            text_position=self._text_position_variable.get(),
             text_font=self._text_font_variable.get(),
             text_color=self._text_color_variable.get(),
             text_style=self._text_style_variable.get(),
@@ -386,9 +363,6 @@ class StoryWindow(CTkFrame):
         self._config_data.story_settings.text_model = story_windows_values.text_model
         self._config_data.story_settings.voice_model = story_windows_values.voice_model
         self._config_data.story_settings.font = story_windows_values.text_font
-        self._config_data.story_settings.text_position = (
-            story_windows_values.text_position
-        )
         self._config_data.story_settings.text_color = story_windows_values.text_color
         self._config_data.story_settings.text_style = story_windows_values.text_style
         self._config_data.story_settings.text_stroke = story_windows_values.text_stroke
@@ -552,9 +526,15 @@ class StoryWindow(CTkFrame):
         # _progress_label_indicator to the callback logger
 
         self._render_close_button = CTkButton(
-            master=main_container, text="Close", state="disabled"
+            master=main_container,
+            text="Close",
+            state="disabled",
+            command=lambda: render_video_window.destroy(),
         )
         self._render_close_button.pack(anchor="se")
+
+        # make sure the behind windows are not interactable
+        render_video_window.after(10, lambda: render_video_window.grab_set())
 
         # render moviepy on thread here
         render_story = RenderStory(
@@ -571,7 +551,14 @@ class StoryWindow(CTkFrame):
         filepath_label.configure(text=f"Rendering video - {filename[:20]}...")
 
         # render on thread
-        thread = Thread(target=render_story.render)
+        # check if config is 3 word or 1 word
+        if self._config_data.story_settings.text_style == "3 words":
+            thread = Thread(target=render_story.render_three_words)
+        elif self._config_data.story_settings.text_style == "1 word":
+            thread = Thread(target=render_story.render_one_word)
+        # default
+        else:
+            thread = Thread(target=render_story.render_three_words)
         thread.start()
 
     # events

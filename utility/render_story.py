@@ -1,10 +1,11 @@
 """Module for rendering the story video."""
 
 from tkinter import Variable
-from typing import Callable
+from typing import Any, Callable
 from PIL import Image
+from PIL.ImageFont import FreeTypeFont
 from customtkinter import CTkLabel
-from moviepy import AudioClip, AudioFileClip, TextClip
+from moviepy import AudioFileClip, TextClip
 from moviepy.video.VideoClip import ImageDraw
 from models.config_data import ConfigData
 from utility.custom_render_logger import CustomMoviepyLogger
@@ -14,12 +15,7 @@ from utility.vidgen_api import VidGen
 
 
 class RenderStory:
-    """RenderStory object.
-
-    Attributes:
-        - chacha
-
-    """
+    """RenderStory object."""
 
     def __init__(
         self,
@@ -48,25 +44,31 @@ class RenderStory:
         self._progress_label_variable: CTkLabel = progress_label_variable
         self._done_callback: Callable[[], None] = done_callback
 
-    def render(self):
-        """Render the video."""
         # get audio transcription data
         generate_voice_object = GenerateVoice(
             script=self._script, config_data=self._config_data
         )
         audio_transcription_data = generate_voice_object.transcript()
+        self._word_data: list[Any] = audio_transcription_data["results"]["channels"][0][
+            "alternatives"
+        ][0]["words"]
 
-        word_data = audio_transcription_data["results"]["channels"][0]["alternatives"][
-            0
-        ]["words"]
+        # unpack vidgen parameters
+        self._video_width: int = self._vidgen_object.video_width
+        self._video_height: int = self._vidgen_object.video_height
+        self.x_center: float = self._vidgen_object.center_position_x
+        self.y_center: float = self._vidgen_object.center_position_y
+        self._font: str = self._vidgen_object.font
+        self._font_object: FreeTypeFont = self._vidgen_object.font_object
 
-        # TODO: Work on the process here
-        # construct a word data of 3 words, overall duration and their
-        # startime, endtime
+    def render_three_words(self):
+        """Render the video on one three words style format."""
+        # construct a word data of 3 words
+        # get data: overall duration, startime and endtime
         chunked_word_data = []
-        for i in range(0, len(word_data), 3):
+        for i in range(0, len(self._word_data), 3):
             # chunk into 3 words
-            chunked_words_data = word_data[i : i + 3]
+            chunked_words_data = self._word_data[i : i + 3]
             chunked_words = [w.get("punctuated_word") for w in chunked_words_data]
             # start time of each word from 3 chunked words
             word_start_time_data = [w["start"] for w in chunked_words_data]
@@ -86,24 +88,16 @@ class RenderStory:
                 }
             )
 
-        # unpack vidgen parameters
-        video_width = self._vidgen_object.video_width
-        video_height = self._vidgen_object.video_height
-        x_center = self._vidgen_object.center_position_x
-        y_center = self._vidgen_object.center_position_y
-        font = self._vidgen_object.font
-        font_object = self._vidgen_object.font_object
-
         # create a sample image object for text calculation
         image = Image.new(
             "RGB",
-            (video_width, video_height),
+            (self._video_width, self._video_height),
             "black",
         )
         draw = ImageDraw.Draw(image)
 
         # the space of the word, matters
-        space_size = font_object.getlength(" ")
+        space_size = self._font_object.getlength(" ")
 
         # work for the 3 words
         word_clips = []
@@ -115,7 +109,7 @@ class RenderStory:
 
             # ====== calculate position =====
             overall_width = sum(
-                [font_object.getlength(w) + space_size for w in chunked_words]
+                [self._font_object.getlength(w) + space_size for w in chunked_words]
             )
             # don't include the last space on last word
             overall_width -= space_size
@@ -123,7 +117,7 @@ class RenderStory:
             # check if the overall width overlaps with the maximum width of the video
             # padding is set for something like a margine for hte whole video screen
             padding = 100
-            is_overlap = (padding + overall_width) - video_width > 0
+            is_overlap = (padding + overall_width) - self._video_width > 0
 
             # if overlap, we will remove the last word, and put it at the second
             # line, these varialbes will be use outside the overlap condition
@@ -134,22 +128,25 @@ class RenderStory:
 
             if is_overlap:
                 # get the height of the last word to properly center them on the second line
-                bbox = draw.textbbox((0, 0), chunked_words[-1], font=font_object)
+                bbox = draw.textbbox((0, 0), chunked_words[-1], font=self._font_object)
                 last_word_height = bbox[3] - bbox[1]
 
-                # remove the last word from the overall_width, so the first line words will have their own original center position later when calculated on starting_x_position
-                last_word_width = font_object.getlength(chunked_words[-1])
+                # remove the last word from the overall_width, so the first line words will
+                # have their own original center position later when calculated on starting_x_position
+                last_word_width = self._font_object.getlength(chunked_words[-1])
                 overall_width -= last_word_width
 
                 # calculate the second line starting x posistion
-                second_line_starting_x_position = x_center - (last_word_width // 2)
+                second_line_starting_x_position = self._x_center - (
+                    last_word_width // 2
+                )
                 # calculate the second line y position with line spacing of 30 between first and second line
-                second_line_y_position = y_center + (
+                second_line_y_position = self._y_center + (
                     (last_word_height + line_spacing) // 2
                 )
 
             # create the first line starting x position
-            starting_x_position = x_center - (overall_width // 2)
+            starting_x_position = self._x_center - (overall_width // 2)
 
             # base layer of the 3 words, no highlights
             word_clip_data = []
@@ -159,9 +156,9 @@ class RenderStory:
                 word_clip = TextClip(
                     text=word,
                     color="white",
-                    font=font,
+                    font=self._font,
                     font_size=self._vidgen_object.font_size,
-                    stroke_width=4,  # TODO: Apply the config data
+                    stroke_width=self._config_data.story_settings.text_stroke,
                     stroke_color="black",
                 )
 
@@ -215,7 +212,7 @@ class RenderStory:
                 )
 
                 # save the current word width for the next starting x position
-                previous_word_width = font_object.getlength(word) + space_size
+                previous_word_width = self._font_object.getlength(word) + space_size
 
                 # update the starting x position
                 starting_x_position += previous_word_width
@@ -224,10 +221,10 @@ class RenderStory:
             for word_highlight_data in word_clip_data:
                 word_highlighted_clip = TextClip(
                     text=word_highlight_data["word"],
-                    color="yellow",
-                    font=font,
+                    color=self._config_data.story_settings.text_color,
+                    font=self._font,
                     font_size=self._vidgen_object.font_size,
-                    stroke_width=4,  # TODO: Apply the config data
+                    stroke_width=self._config_data.story_settings.text_stroke,
                     stroke_color="black",
                 )
 
@@ -250,6 +247,50 @@ class RenderStory:
         # add the clips to the vidgen object
         self._vidgen_object.add_text_clip(word_clips)
         self._vidgen_object.add_text_clip(word_highlighted_clips)
+
+        # load the audio voiceover
+        voiceover_path = create_audio_filename(
+            script=self._script,
+            voice_model_name=self._config_data.story_settings.voice_model,
+        )
+        self._vidgen_object.add_audio(AudioFileClip(voiceover_path))
+
+        # assuming everything is done above
+        self._vidgen_object.render(
+            custom_callback=CustomMoviepyLogger(
+                progress_bar_variable=self._progress_bar_variable,
+                progress_label_variable=self._progress_label_variable,
+            )
+        )
+
+        # call the down callback from the user interface
+        self._done_callback()
+
+    def render_one_word(self):
+        """Render the video on one word style format."""
+        word_clips = []
+        for wd in self._word_data:
+            word_clip = TextClip(
+                text=wd["word"],
+                color=self._config_data.story_settings.text_color,
+                font=self._font,
+                font_size=self._vidgen_object.font_size,
+                stroke_width=self._config_data.story_settings.text_stroke,
+                stroke_color="black",
+            )
+
+            # set their respective positions
+            word_clip = word_clip.with_position(("center", "center"))
+
+            # notice that I am using their original start time and end time
+            # for overall duration
+            word_clip = word_clip.with_start(wd["start"])
+            word_clip = word_clip.with_end(wd["end"])
+
+            word_clips.append(word_clip)
+
+        # add the clips to the vidgen object
+        self._vidgen_object.add_text_clip(word_clips)
 
         # load the audio voiceover
         voiceover_path = create_audio_filename(

@@ -1,8 +1,8 @@
 """All API for generating the video."""
 
-from collections.abc import Callable
+from os import mkdir
+from os.path import isdir
 from PIL import ImageFont, Image
-from customtkinter import CTkLabel, Variable
 from moviepy import (
     AudioClip,
     AudioFileClip,
@@ -187,9 +187,11 @@ class VidGen:
         final_clip = final_clip.with_audio(audio_clip)
         final_clip = final_clip.with_duration(video_duration)
 
+        # make sure videos folder exists
+        if not isdir("videos"):
+            mkdir("videos")
+
         # render
-        # TODO:
-        #    Indicator for the rendering process.
         filename = self.get_video_filepath()
         final_clip.write_videofile(
             filename,
