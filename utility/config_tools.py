@@ -24,6 +24,10 @@ def save_api_config(config_object: ConfigData):
             "openai_vision_model": config_object.api_settings.openai_vision_model,
             "openai_token": config_object.api_settings.openai_token,
             "deepgram_token": config_object.api_settings.deepgram_token,
+            "facebook_token": config_object.api_settings.facebook_token,
+            "instagram_token": config_object.api_settings.instagram_token,
+            "tiktok_token": config_object.api_settings.tiktok_token,
+            "youtube_token": config_object.api_settings.youtube_token,
         },
         "default_settings": {
             "story": {
@@ -77,6 +81,10 @@ def load_config_object() -> ConfigData:
         openai_vision_model=config_data["api_settings"]["openai_vision_model"],
         openai_token=config_data["api_settings"]["openai_token"],
         deepgram_token=config_data["api_settings"]["deepgram_token"],
+        facebook_token=config_data["api_settings"]["facebook_token"],
+        instagram_token=config_data["api_settings"]["instagram_token"],
+        tiktok_token=config_data["api_settings"]["tiktok_token"],
+        youtube_token=config_data["api_settings"]["youtube_token"],
     )
 
     return ConfigData(

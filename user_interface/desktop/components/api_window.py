@@ -49,6 +49,10 @@ class ApiWindow(CTkFrame):
         self._openai_vision_model: StringVar = StringVar()
         self._openai_api_entry: CTkEntry
         self._deepgram_api_entry: CTkEntry
+        self._fb_api_entry: CTkEntry
+        self._instagram_api_entry: CTkEntry
+        self._tiktok_api_entry: CTkEntry
+        self._youtube_api_entry: CTkEntry
 
         # main frames
         scrollable_container: CTkScrollableFrame = CTkScrollableFrame(master=self)
@@ -69,6 +73,7 @@ class ApiWindow(CTkFrame):
         self._setup_deepinfra_settings()
         self._setup_openai_settings()
         self._setup_deepgram_settings()
+        self._setup_social_api_settings()
 
         # save button
         save_frame = CTkFrame(
@@ -310,6 +315,92 @@ class ApiWindow(CTkFrame):
                 0, self._config_data.api_settings.deepgram_token
             )
 
+    def _setup_social_api_settings(self):
+        """Set up social api settings widgets."""
+        main_social_frame = CTkFrame(
+            master=self._center_container, width=600, height=210
+        )
+        main_social_frame.pack_propagate(False)
+        main_social_frame.pack(pady=(0, 12))
+
+        social_frame = CTkFrame(master=main_social_frame, fg_color="transparent")
+        social_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        CTkLabel(
+            master=social_frame,
+            text="Social media upload",
+            font=tkinter_font(size=16, weight="bold"),
+        ).pack(anchor="w", pady=(0, 8))
+
+        # facebook
+        fb_token_frame = CTkFrame(social_frame, fg_color="transparent")
+        fb_token_frame.pack(fill="x", pady=(0, 8))
+        CTkLabel(
+            master=fb_token_frame, text="Facebook token", font=tkinter_font()
+        ).pack(side="left", anchor="w")
+        self._fb_api_entry = CTkEntry(
+            master=fb_token_frame,
+            placeholder_text="EAAC*****",
+        )
+        self._fb_api_entry.pack(anchor="e")
+
+        # instagram
+        instagram_token_frame = CTkFrame(social_frame, fg_color="transparent")
+        instagram_token_frame.pack(fill="x", pady=(0, 8))
+        CTkLabel(
+            master=instagram_token_frame,
+            text="Instagram token",
+            font=tkinter_font(),
+        ).pack(side="left", anchor="w")
+        self._instagram_api_entry = CTkEntry(
+            master=instagram_token_frame,
+            placeholder_text="IGQ*****",
+        )
+        self._instagram_api_entry.pack(anchor="e")
+
+        # tiktok
+        tiktok_token_frame = CTkFrame(social_frame, fg_color="transparent")
+        tiktok_token_frame.pack(fill="x", pady=(0, 8))
+        CTkLabel(
+            master=tiktok_token_frame, text="Tiktok token", font=tkinter_font()
+        ).pack(side="left", anchor="w")
+        self._tiktok_api_entry = CTkEntry(
+            master=tiktok_token_frame,
+            placeholder_text="tiktok token",
+        )
+        self._tiktok_api_entry.pack(anchor="e")
+
+        # youtube
+        youtube_token_frame = CTkFrame(social_frame, fg_color="transparent")
+        youtube_token_frame.pack(fill="x")
+        CTkLabel(
+            master=youtube_token_frame, text="Youtube token", font=tkinter_font()
+        ).pack(side="left", anchor="w")
+        self._youtube_api_entry = CTkEntry(
+            master=youtube_token_frame,
+            placeholder_text="youtube token",
+        )
+        self._youtube_api_entry.pack(anchor="e")
+
+        # load config values
+        if self._config_data.api_settings.facebook_token:
+            self._fb_api_entry.insert(0, self._config_data.api_settings.facebook_token)
+
+        if self._config_data.api_settings.instagram_token:
+            self._instagram_api_entry.insert(
+                0, self._config_data.api_settings.instagram_token
+            )
+
+        if self._config_data.api_settings.tiktok_token:
+            self._tiktok_api_entry.insert(
+                0, self._config_data.api_settings.tiktok_token
+            )
+
+        if self._config_data.api_settings.youtube_token:
+            self._youtube_api_entry.insert(
+                0, self._config_data.api_settings.youtube_token
+            )
+
     def _get_entry_values(self, entry: CTkEntry | None) -> str | None:
         """Dynamically get the values from text entry widgets.
 
@@ -328,7 +419,9 @@ class ApiWindow(CTkFrame):
         """Save API settings to `config.json` local file."""
         # save all values
         self._config_data.api_settings.gemini_text_model = self._gemini_text_model.get()
-        self._config_data.api_settings.gemini_vision_model = self._gemini_vision_model.get()
+        self._config_data.api_settings.gemini_vision_model = (
+            self._gemini_vision_model.get()
+        )
         self._config_data.api_settings.gemini_token = self._gemini_api_entry.get()
 
         self._config_data.api_settings.deepinfra_text_model = (
@@ -351,6 +444,22 @@ class ApiWindow(CTkFrame):
 
         self._config_data.api_settings.deepgram_token = self._get_entry_values(
             self._deepgram_api_entry
+        )
+
+        self._config_data.api_settings.facebook_token = self._get_entry_values(
+            self._fb_api_entry
+        )
+
+        self._config_data.api_settings.instagram_token = self._get_entry_values(
+            self._instagram_api_entry
+        )
+
+        self._config_data.api_settings.tiktok_token = self._get_entry_values(
+            self._tiktok_api_entry
+        )
+
+        self._config_data.api_settings.youtube_token = self._get_entry_values(
+            self._youtube_api_entry
         )
 
         save_api_config(config_object=self._config_data)

@@ -65,3 +65,9 @@ class ApiDefaultSettings:
 
     # deepgram api settings
     deepgram_token: str = ""
+
+    # social media api settings
+    facebook_token: str = ""
+    instagram_token: str = ""
+    tiktok_token: str = ""
+    youtube_token: str = ""
