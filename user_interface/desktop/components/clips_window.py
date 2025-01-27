@@ -50,7 +50,8 @@ class ClipsWindow(CTkFrame):
 
         Args:
             master (customtkinter.CTkFrame): The main window of the desktop.
-            config_data (models.config_data.ConfigData): For saving and loading configurations.
+            config_data (models.config_data.ConfigData): For saving and loading
+                configurations.
             **kwargs (Any): What CTkFrame needs.
 
         """
@@ -266,6 +267,13 @@ class ClipsWindow(CTkFrame):
             returns error.
 
         """
+        # don't process on same widget clicked
+        if self._previous_selected == widget:
+            return
+
+        if self._previous_selected:
+            self._previous_selected.configure(fg_color="transparent", hover=True)
+
         # load image
         vidgen = VidGen()
         clip_path = join("assets/clips/", widget.cget("text"))
@@ -279,9 +287,6 @@ class ClipsWindow(CTkFrame):
         widget.configure(
             fg_color=ThemeManager.theme["CTkButton"]["fg_color"], hover=False
         )
-
-        if self._previous_selected:
-            self._previous_selected.configure(fg_color="transparent", hover=True)
 
         self._previous_selected = widget
 

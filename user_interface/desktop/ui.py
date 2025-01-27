@@ -12,6 +12,7 @@ from user_interface.desktop.components.api_window import ApiWindow
 from user_interface.desktop.components.clips_window import ClipsWindow
 from user_interface.desktop.components.sidebar import Sidebar
 from user_interface.desktop.components.story_window import StoryWindow
+from user_interface.desktop.components.video_window import VideoWindow
 from utility.config_tools import load_config_object
 from utility.vidgen_api import VidGen
 
@@ -70,6 +71,11 @@ class DesktopApp(CTk):
         )
         story_window.pack()
 
+        # video window
+        video_window = VideoWindow(
+            master=main_window_frame, config_data=self._config_object
+        )
+
         api_window = ApiWindow(
             master=main_window_frame, config_data=self._config_object
         )
@@ -79,8 +85,13 @@ class DesktopApp(CTk):
             master=main_window_frame, config_data=self._config_object
         )
 
-        components: Sequence[CTkFrame] = [story_window, api_window, clips_window]
+        components: Sequence[CTkFrame] = [
+            story_window,
+            api_window,
+            clips_window,
+            video_window,
+        ]
         sidebar.register_components(components)
 
         # default selection
-        sidebar.on_select_sidebar_button("Story")
+        sidebar.on_select_sidebar_button("Videos")

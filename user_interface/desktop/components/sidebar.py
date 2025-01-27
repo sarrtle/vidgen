@@ -153,7 +153,7 @@ class Sidebar(CTkFrame):
                 self._previous_selected = current_selected
 
                 # add the new selected
-                current_selected.pack()
+                current_selected.pack(expand=True, fill="both")
             else:
                 button.configure(fg_color="transparent", hover=True)
 
