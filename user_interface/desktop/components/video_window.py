@@ -6,7 +6,8 @@ and can delete or upload to social medias.
 
 from os import listdir, remove
 from os.path import join as pjoin
-from typing import Any
+from tkinter import messagebox
+from typing import Any, Callable
 from PIL import Image
 from customtkinter import (
     CTkButton,
@@ -20,6 +21,7 @@ from customtkinter import (
 
 from models.config_data import ConfigData
 from utility.tools import tkinter_font
+from utility.upload import upload_to_facebook
 from utility.vidgen_api import VidGen
 
 
@@ -38,6 +40,9 @@ class VideoWindow(CTkFrame):
         """
         super().__init__(master, **kwargs)
         self.name: str = "Videos"
+
+        # important variables
+        self._config_data: ConfigData = config_data
 
         # containers
         self._left_container: CTkFrame
@@ -165,9 +170,13 @@ class VideoWindow(CTkFrame):
         for index, social in enumerate(list_of_social):
             row = (index // 2) + 1  # Determine row (integer division)
             col = index % 2  # Determine column (remainder)
-            CTkButton(master=upload_frame, text=social).grid(
-                row=row, column=col, padx=4, pady=4
-            )
+            CTkButton(
+                master=upload_frame,
+                text=social,
+                command=lambda platform_type=social: self._on_social_upload_clicked(
+                    platform_type
+                ),
+            ).grid(row=row, column=col, padx=4, pady=4)
 
     def _load_videos_to_ui(self):
         """Load videos to ui."""
@@ -247,3 +256,42 @@ class VideoWindow(CTkFrame):
 
         # refresh video list
         self._load_videos_to_ui()
+
+    def _on_social_upload_clicked(self, platform_type: str):
+        """Handle upload to social media.
+
+        Args:
+            platform_type (str): The social media platform type.
+
+        """
+        # platform type: (token, function)
+        platform_data: dict[str, tuple[str, Callable[[], None]]] = {
+            "Facebook": (
+                self._config_data.api_settings.facebook_token,
+                upload_to_facebook,
+            ),
+            "Instagram": (
+                self._config_data.api_settings.instagram_token,
+                upload_to_facebook,
+            ),
+            "Tiktok": (self._config_data.api_settings.tiktok_token, upload_to_facebook),
+            "Youtube": (
+                self._config_data.api_settings.youtube_token,
+                upload_to_facebook,
+            ),
+        }
+
+        # unpack data
+        token, function = platform_data[platform_type]
+
+        # check if token is valid
+        if not token:
+            messagebox.showerror(
+                title="Error",
+                message=f"Please input your {platform_type} token first.",
+            )
+            return
+
+        # call the upload function
+        # might run this on thread
+        function()
