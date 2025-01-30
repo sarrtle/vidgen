@@ -10,7 +10,7 @@ Notes:
 
 """
 
-from typing import Any, override
+from typing import Any, Callable, override
 from collections.abc import Sequence
 from customtkinter import CTkButton, CTkFrame, ThemeManager
 
@@ -21,13 +21,15 @@ class _SidebarButton(CTkButton):
     This is only for the Sidebar class to use.
     """
 
-    def __init__(self, master: CTkFrame, text: str, **kwargs: Any):
+    def __init__(
+        self, master: CTkFrame, text: str, command: Callable[[], None], **kwargs: Any
+    ):
         """Initialize the _SidebarButton.
 
         Args:
             master (customtkinter.CtkFrame): The Sidebar frame.
             text (str): The text on the button.
-            selected (bool): If the button is selected.
+            command (Callable[[], None]): The command to execute.
             **kwargs (Any): What CtkFrame needs.
 
         Notes:
@@ -39,7 +41,9 @@ class _SidebarButton(CTkButton):
             for some design purposes.
 
         """
-        super().__init__(master, text=text, fg_color="transparent", **kwargs)
+        super().__init__(
+            master, text=text, fg_color="transparent", command=command, **kwargs
+        )
 
         self.text: str = text
 
@@ -83,41 +87,20 @@ class Sidebar(CTkFrame):
 
     def _add_sidebar_buttons(self):
         """Add the sidebar buttons dynamically."""
-        story_button = _SidebarButton(master=self._inner_frame, text="Story")
-        riddle_button = _SidebarButton(master=self._inner_frame, text="Riddle")
-        music_button = _SidebarButton(master=self._inner_frame, text="Music")
-        video_button = _SidebarButton(master=self._inner_frame, text="Videos")
-        clip_button = _SidebarButton(master=self._inner_frame, text="Clips")
-        api_button = _SidebarButton(master=self._inner_frame, text="Api")
+        sidebar_names = ["Story", "Riddle", "Music", "Videos", "Clips", "Api"]
 
-        # register the on click command
-        # I don't know why the loop method of registration won't work. Even I made copies
-        # of object. The last iteration of the loop (upload) is always used as the selected
-        # sidebar button.
-        story_button.configure(command=lambda: self.on_select_sidebar_button("Story"))
-        riddle_button.configure(command=lambda: self.on_select_sidebar_button("Riddle"))
-        music_button.configure(command=lambda: self.on_select_sidebar_button("Music"))
-        video_button.configure(command=lambda: self.on_select_sidebar_button("Videos"))
-        clip_button.configure(command=lambda: self.on_select_sidebar_button("Clips"))
-        api_button.configure(command=lambda: self.on_select_sidebar_button("Api"))
+        for sidebar_name in sidebar_names:
+            sidebar_button = _SidebarButton(
+                master=self._inner_frame,
+                text=sidebar_name,
+                command=lambda name=sidebar_name: self.on_select_sidebar_button(name),
+            )
 
-        # register the buttons for future references.
-        self._sidebar_buttons = [
-            story_button,
-            riddle_button,
-            music_button,
-            video_button,
-            clip_button,
-            api_button,
-        ]
+            # render buttons to sidebar frame
+            sidebar_button.pack()
 
-        # render buttons to the sidebar frame
-        story_button.pack()
-        riddle_button.pack()
-        music_button.pack()
-        video_button.pack()
-        clip_button.pack()
-        api_button.pack()
+            # register the buttons for future references
+            self._sidebar_buttons.append(sidebar_button)
 
     def on_select_sidebar_button(self, button_text: str):
         """Do something when one of the sidebar button was selected."""
