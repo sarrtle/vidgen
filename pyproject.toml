@@ -1,3 +1,19 @@
+[project]
+name = "Vidgen"
+version = "0.1.0"
+description = "A tool for automating video creation. Includes Reddit-style stories with Minecraft parkour"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "customtkinter>=5.2.2",
+    "deepgram-sdk>=3.8.0",
+    "google-generativeai>=0.8.4",
+    "moviepy>=2.1.2",
+    "pillow>=10.4.0",
+    "pygame>=2.6.1",
+    "yt-dlp>=2025.1.26",
+]
+
 [tool.basedpyright]
 reportMissingTypeStubs = false
 reportUnknownMemberType = false
