@@ -68,6 +68,7 @@ class ApiDefaultSettings:
 
     # social media api settings
     facebook_token: str = ""
+    facebook_page: str = ""
     instagram_token: str = ""
     tiktok_token: str = ""
     youtube_token: str = ""

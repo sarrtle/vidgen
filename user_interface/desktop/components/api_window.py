@@ -50,6 +50,7 @@ class ApiWindow(CTkFrame):
         self._openai_api_entry: CTkEntry
         self._deepgram_api_entry: CTkEntry
         self._fb_api_entry: CTkEntry
+        self._fb_page_entry: CTkEntry
         self._instagram_api_entry: CTkEntry
         self._tiktok_api_entry: CTkEntry
         self._youtube_api_entry: CTkEntry
@@ -318,7 +319,7 @@ class ApiWindow(CTkFrame):
     def _setup_social_api_settings(self):
         """Set up social api settings widgets."""
         main_social_frame = CTkFrame(
-            master=self._center_container, width=600, height=210
+            master=self._center_container, width=600, height=250
         )
         main_social_frame.pack_propagate(False)
         main_social_frame.pack(pady=(0, 12))
@@ -343,6 +344,17 @@ class ApiWindow(CTkFrame):
             placeholder_text="EAAC*****",
         )
         self._fb_api_entry.pack(anchor="e")
+
+        facebook_page_frame = CTkFrame(social_frame, fg_color="transparent")
+        facebook_page_frame.pack(fill="x", pady=(0, 8))
+        CTkLabel(
+            master=facebook_page_frame, text="Facebook Page", font=tkinter_font()
+        ).pack(side="left", anchor="w")
+        self._fb_page_entry = CTkEntry(
+            master=facebook_page_frame,
+            placeholder_text="https://www.facebook.com/",
+        )
+        self._fb_page_entry.pack(anchor="e")
 
         # instagram
         instagram_token_frame = CTkFrame(social_frame, fg_color="transparent")
@@ -385,6 +397,9 @@ class ApiWindow(CTkFrame):
         # load config values
         if self._config_data.api_settings.facebook_token:
             self._fb_api_entry.insert(0, self._config_data.api_settings.facebook_token)
+
+        if self._config_data.api_settings.facebook_page:
+            self._fb_page_entry.insert(0, self._config_data.api_settings.facebook_page)
 
         if self._config_data.api_settings.instagram_token:
             self._instagram_api_entry.insert(
@@ -448,6 +463,10 @@ class ApiWindow(CTkFrame):
 
         self._config_data.api_settings.facebook_token = self._get_entry_values(
             self._fb_api_entry
+        )
+
+        self._config_data.api_settings.facebook_page = self._get_entry_values(
+            self._fb_page_entry
         )
 
         self._config_data.api_settings.instagram_token = self._get_entry_values(
