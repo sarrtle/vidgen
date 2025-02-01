@@ -21,6 +21,7 @@ Notes:
 """
 
 # Upload to facebook
+from typing import Callable
 from customtkinter import CTkLabel
 from models.config_data import ConfigData
 
@@ -29,13 +30,19 @@ import requests
 from os.path import getsize
 
 
-def upload_to_facebook(video_path: str, config_data: ConfigData, label_state: CTkLabel):
+def upload_to_facebook(
+    video_path: str,
+    config_data: ConfigData,
+    label_state: CTkLabel,
+    done_callback: Callable[[bool, CTkLabel, str], None],
+):
     """Upload to facebook.
 
     Args:
         video_path (str): The path of the video to upload.
         config_data (ConfigData): The configuration data.
         label_state (CTkLabel): Update the state of the label from ui.
+        done_callback (Callable[[bool, CTkLabel, str], None]): Callback when upload is done.
 
     Raises:
         TODO:ErrorException
@@ -53,14 +60,13 @@ def upload_to_facebook(video_path: str, config_data: ConfigData, label_state: CT
     response = requests.post(url, json=data)
 
     if response.status_code != 200:
-        # Handle error here
+        done_callback(False, label_state, f"Status is {response.status_code}")
         return
 
     response_data = response.json()
 
     if "video_id" not in response_data or "upload_url" not in response_data:
-        # Handle error here that video_id not found
-        # show data on message
+        done_callback(False, label_state, "Video id not found")
         return
 
     # unpack response
@@ -79,14 +85,15 @@ def upload_to_facebook(video_path: str, config_data: ConfigData, label_state: CT
     response = requests.post(url=upload_url, headers=headers, data=binary_data)
 
     if response.status_code != 200:
-        # Handle error here
+        done_callback(
+            False, label_state, f"Failed to start session: {response.status_code}"
+        )
         return
 
     response_data = response.json()
 
     if "success" not in response_data:
-        # Handle error here that video_id not found
-        # show data on message
+        done_callback(False, label_state, "Upload not success")
         return
 
     # TODO: Yield the upload status or progress

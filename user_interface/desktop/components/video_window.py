@@ -6,6 +6,8 @@ and can delete or upload to social medias.
 
 from os import listdir, remove
 from os.path import join as pjoin
+from platform import system
+from threading import Thread
 from tkinter import messagebox
 from typing import Any, Callable
 from PIL import Image
@@ -16,6 +18,7 @@ from customtkinter import (
     CTkImage,
     CTkLabel,
     CTkScrollableFrame,
+    CTkToplevel,
     ThemeManager,
 )
 
@@ -58,6 +61,35 @@ class VideoWindow(CTkFrame):
         self._preview_image_label: CTkLabel
         self._video_widgets: list[CTkButton] = []
         self._selected_video_path: str | None = None
+        self._upload_window: CTkToplevel | None = None
+
+        # important data
+        self._uploaded_video: list[str] = []
+        self._label_states: list[CTkLabel] = []
+
+        self._platform_data: dict[  # platform type: (token, function)
+            str,
+            tuple[
+                str,
+                Callable[
+                    [str, ConfigData, CTkLabel, Callable[[bool, CTkLabel], None]], None
+                ],
+            ],
+        ] = {
+            "Facebook": (
+                self._config_data.api_settings.facebook_token,
+                upload_to_facebook,
+            ),
+            "Instagram": (
+                self._config_data.api_settings.instagram_token,
+                upload_to_facebook,
+            ),
+            "Tiktok": (self._config_data.api_settings.tiktok_token, upload_to_facebook),
+            "Youtube": (
+                self._config_data.api_settings.youtube_token,
+                upload_to_facebook,
+            ),
+        }
 
         # setup containers
         self._setup_containers()
@@ -165,9 +197,7 @@ class VideoWindow(CTkFrame):
             row=0, column=0, columnspan=2, sticky="w", pady=(0, 10)
         )
 
-        list_of_social = ["Facebook", "Instagram", "Tiktok", "Youtube"]
-
-        for index, social in enumerate(list_of_social):
+        for index, social in enumerate(self._platform_data.keys()):
             row = (index // 2) + 1  # Determine row (integer division)
             col = index % 2  # Determine column (remainder)
             CTkButton(
@@ -264,25 +294,8 @@ class VideoWindow(CTkFrame):
             platform_type (str): The social media platform type.
 
         """
-        # platform type: (token, function)
-        platform_data: dict[str, tuple[str, Callable[[], None]]] = {
-            "Facebook": (
-                self._config_data.api_settings.facebook_token,
-                upload_to_facebook,
-            ),
-            "Instagram": (
-                self._config_data.api_settings.instagram_token,
-                upload_to_facebook,
-            ),
-            "Tiktok": (self._config_data.api_settings.tiktok_token, upload_to_facebook),
-            "Youtube": (
-                self._config_data.api_settings.youtube_token,
-                upload_to_facebook,
-            ),
-        }
-
         # unpack data
-        token, function = platform_data[platform_type]
+        token, function = self._platform_data[platform_type]
 
         # check if token is valid
         if not token:
@@ -292,6 +305,103 @@ class VideoWindow(CTkFrame):
             )
             return
 
-        # call the upload function
-        # might run this on thread
-        function()
+        if not self._selected_video_path:
+            messagebox.showerror(title="Error", message="Please select a video first.")
+            return
+
+        # create top level window for showcasing upload details
+        # Label: Uploads
+        # Facebook (status):              Uploading (%percentage)
+        # Instagram (status):             Uploading (%percentage)
+        # Tiktok (status):                Uploading (%percentage)
+        # Youtube (status):               Uploading (%percentage)
+        label_states = self._setup_upload_toplevel_ui()
+
+        # Don't upload if already uploaded or on process
+        if self._selected_video_path in self._uploaded_video:
+            return
+
+        current_label_state = label_states[platform_type.index(platform_type)]
+        self._uploaded_video.append(self._selected_video_path)
+        thread = Thread(
+            target=function,
+            args=(
+                self._selected_video_path,
+                self._config_data,
+                current_label_state,
+                self._upload_video_done,
+            ),
+        )
+
+        thread.start()
+
+    def _setup_upload_toplevel_ui(self) -> list[CTkLabel]:
+        """Set up top level window for uploading process."""
+        # don't create top level window if already created
+        # show it instead
+        if self._upload_window:
+            self._upload_window.deiconify()
+            return self._label_states
+
+        # create a top level window
+        self._upload_window = CTkToplevel(self)
+        self._upload_window.geometry("400x300")
+        self._upload_window.title("Uploading video")
+
+        # make the window float on LINUX only
+        # mainly some of the window managers that needs it.
+        if system() == "Linux":
+            self._upload_window.attributes("-type", "dialog")
+
+        # ensure always on top
+        self._upload_window.attributes("-topmost", True)
+
+        # main container with the widgets information
+        main_container = CTkFrame(master=self._upload_window, fg_color="transparent")
+        main_container.pack(expand=True, fill="both", padx=20, pady=20)
+
+        CTkLabel(
+            master=main_container, text="Uploads", font=tkinter_font(16, "bold")
+        ).pack(anchor="w")
+
+        social_container = CTkFrame(master=main_container, fg_color="transparent")
+        social_container.pack(expand=True, fill="x", pady=(0, 8))
+
+        for social_type in self._platform_data.keys():
+            # create a label for each social media
+            social_type_frame = CTkFrame(
+                master=social_container, fg_color="transparent"
+            )
+            social_type_frame.pack(expand=True, fill="x", pady=(0, 8))
+
+            CTkLabel(master=social_type_frame, text=f"{social_type} (status):").pack(
+                anchor="w", side="left"
+            )
+
+            label_state = CTkLabel(master=social_type_frame, text="N/A")
+            label_state.pack(anchor="e")
+            self._label_states.append(label_state)
+
+        control_container = CTkFrame(master=main_container, fg_color="transparent")
+        control_container.pack(expand=True, fill="x")
+
+        CTkButton(
+            master=control_container, text="Close", command=self._upload_window.withdraw
+        ).pack(anchor="e")
+
+        return self._label_states
+
+    # callback
+    def _upload_video_done(
+        self, status: bool, label_state: CTkLabel, additional_message: str = ""
+    ):
+        """Call when video upload is done."""
+        if not status:
+            label_state.configure(
+                text=(
+                    f"{additional_message} - Failed" if additional_message else "Failed"
+                ),
+                text_color="#D32F2F",
+            )
+        else:
+            label_state.configure(text="Done", text_color="#4CAF50")
