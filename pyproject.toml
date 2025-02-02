@@ -8,7 +8,7 @@ dependencies = [
     "customtkinter>=5.2.2",
     "deepgram-sdk>=3.8.0",
     "google-generativeai>=0.8.4",
-    "moviepy>=2.1.2",
+    "moviepy==2.1.1",
     "pillow>=10.4.0",
     "pygame>=2.6.1",
     "yt-dlp>=2025.1.26",
