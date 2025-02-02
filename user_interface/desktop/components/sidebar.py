@@ -14,6 +14,8 @@ from typing import Any, Callable, override
 from collections.abc import Sequence
 from customtkinter import CTkButton, CTkFrame, ThemeManager
 
+from user_interface.desktop.components.no_window import NoWindow
+
 
 class _SidebarButton(CTkButton):
     """Sidebar button for the sidebar component.
@@ -73,7 +75,7 @@ class Sidebar(CTkFrame):
 
         """
         super().__init__(master, **kwargs)
-
+        self._master_frame: CTkFrame = master
         self._inner_frame: CTkFrame = CTkFrame(master=self, fg_color="transparent")
         self._inner_frame.pack(fill="both", expand=True, padx=15, pady=20)
 
@@ -104,6 +106,7 @@ class Sidebar(CTkFrame):
 
     def on_select_sidebar_button(self, button_text: str):
         """Do something when one of the sidebar button was selected."""
+        no_window_content = ["Riddle", "Music"]
         for button in self._sidebar_buttons:
             if button.text == button_text:
                 # TODO: Get theme or original color as utility
@@ -118,16 +121,14 @@ class Sidebar(CTkFrame):
 
                 # get selected sidebar component
                 current_selected = None
-                for sidebar_component in self._sidebar_components:
-                    if sidebar_component.__dict__.get("name") == button_text:
-                        current_selected = sidebar_component
+                if button_text in no_window_content:
+                    current_selected = NoWindow(master=self._master_frame)
 
-                # assert (
-                #     current_selected is not None
-                # ), f"No attribute `name` on {button.text}."
-                # TODO: Once all sidebar components has been made,
-                #       uncomment assertion for checking of attribute `name`
-                #       remove this temporary line of code
+                else:
+                    for sidebar_component in self._sidebar_components:
+                        if sidebar_component.__dict__.get("name") == button_text:
+                            current_selected = sidebar_component
+
                 if current_selected is None:
                     current_selected = self._previous_selected
 
