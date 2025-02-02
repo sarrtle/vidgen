@@ -7,6 +7,5 @@ from dataclasses import dataclass
 class UploadData:
     """Upload data model."""
 
-    title: str
     description: str
     hashtags: str

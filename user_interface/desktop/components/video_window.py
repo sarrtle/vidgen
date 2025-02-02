@@ -5,11 +5,11 @@ and can delete or upload to social medias.
 """
 
 from os import listdir, remove
-from os.path import join as pjoin
+from os.path import getmtime, join as pjoin
 from platform import system
 from threading import Thread
 from tkinter import messagebox
-from typing import Any, Callable
+from typing import Any, Callable, override
 from PIL import Image
 from customtkinter import (
     CTkButton,
@@ -67,7 +67,6 @@ class VideoWindow(CTkFrame):
         # important data
         self._uploaded_video: list[str] = []
         self._label_states: list[CTkLabel] = []
-        self._title: CTkEntry
         self._description: CTkEntry
         self._hashtags: CTkEntry
 
@@ -104,6 +103,13 @@ class VideoWindow(CTkFrame):
 
         # setup containers
         self._setup_containers()
+
+    @override
+    def pack(self, **kwargs: Any):
+        """Render the component to the main window."""
+        super().pack(**kwargs)
+        # load videos when widget is rendered
+        self._load_videos_to_ui()
 
     def _setup_containers(self):
         """Set up important containers."""
@@ -186,11 +192,6 @@ class VideoWindow(CTkFrame):
         video_metadata_frame = CTkFrame(master=main_frame)
         video_metadata_frame.pack(anchor="w", expand=True, fill="x", pady=(0, 12))
 
-        #   title
-        CTkLabel(master=video_metadata_frame, text="Title").pack(anchor="w")
-        self._title = CTkEntry(master=video_metadata_frame)
-        self._title.pack(anchor="w", fill="x")
-
         #   description
         CTkLabel(master=video_metadata_frame, text="Description").pack(anchor="w")
         self._description = CTkEntry(master=video_metadata_frame)
@@ -230,6 +231,9 @@ class VideoWindow(CTkFrame):
 
         # refresh the video widgets
         video_list = listdir("videos/")
+
+        # sort video by modified time
+        video_list.sort(key=lambda video: -getmtime(pjoin("videos/", video)))
 
         for video in video_list:
             video_path = pjoin("videos/", video)
@@ -337,7 +341,6 @@ class VideoWindow(CTkFrame):
 
         # initialize upload data
         upload_data = UploadData(
-            title=self._title.get(),
             description=self._description.get(),
             hashtags=self._hashtags.get(),
         )
