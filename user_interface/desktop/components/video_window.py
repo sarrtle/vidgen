@@ -23,6 +23,7 @@ from customtkinter import (
 )
 
 from models.config_data import ConfigData
+from models.upload_model import UploadData
 from utility.tools import tkinter_font
 from utility.upload import upload_to_facebook
 from utility.vidgen_api import VidGen
@@ -66,13 +67,23 @@ class VideoWindow(CTkFrame):
         # important data
         self._uploaded_video: list[str] = []
         self._label_states: list[CTkLabel] = []
+        self._title: CTkEntry
+        self._description: CTkEntry
+        self._hashtags: CTkEntry
 
         self._platform_data: dict[  # platform type: (token, function)
             str,
             tuple[
                 str,
                 Callable[
-                    [str, ConfigData, CTkLabel, Callable[[bool, CTkLabel], None]], None
+                    [
+                        str,
+                        ConfigData,
+                        UploadData,
+                        CTkLabel,
+                        Callable[[bool, CTkLabel], None],
+                    ],
+                    None,
                 ],
             ],
         ] = {
@@ -177,17 +188,20 @@ class VideoWindow(CTkFrame):
 
         #   title
         CTkLabel(master=video_metadata_frame, text="Title").pack(anchor="w")
-        CTkEntry(master=video_metadata_frame).pack(anchor="w", fill="x")
+        self._title = CTkEntry(master=video_metadata_frame)
+        self._title.pack(anchor="w", fill="x")
 
         #   description
         CTkLabel(master=video_metadata_frame, text="Description").pack(anchor="w")
-        CTkEntry(master=video_metadata_frame).pack(anchor="w", fill="x")
+        self._description = CTkEntry(master=video_metadata_frame)
+        self._description.pack(anchor="w", fill="x")
 
         #   hashtags
         hashtag_frame = CTkFrame(master=video_metadata_frame, fg_color="transparent")
         hashtag_frame.pack(expand=True, fill="x")
         CTkLabel(master=hashtag_frame, text="Hashtags").pack(anchor="w")
-        CTkEntry(master=hashtag_frame).pack(fill="x", expand=True)
+        self._hashtags = CTkEntry(master=hashtag_frame)
+        self._hashtags.pack(fill="x")
 
         # upload buttons
         upload_frame = CTkFrame(master=main_frame)
@@ -321,6 +335,13 @@ class VideoWindow(CTkFrame):
         if self._selected_video_path in self._uploaded_video:
             return
 
+        # initialize upload data
+        upload_data = UploadData(
+            title=self._title.get(),
+            description=self._description.get(),
+            hashtags=self._hashtags.get(),
+        )
+
         current_label_state = label_states[platform_type.index(platform_type)]
         self._uploaded_video.append(self._selected_video_path)
         thread = Thread(
@@ -328,6 +349,7 @@ class VideoWindow(CTkFrame):
             args=(
                 self._selected_video_path,
                 self._config_data,
+                upload_data,
                 current_label_state,
                 self._upload_video_done,
             ),
@@ -341,6 +363,7 @@ class VideoWindow(CTkFrame):
         # show it instead
         if self._upload_window:
             self._upload_window.deiconify()
+            self._upload_window.grab_set()
             return self._label_states
 
         # create a top level window
@@ -385,15 +408,26 @@ class VideoWindow(CTkFrame):
         control_container = CTkFrame(master=main_container, fg_color="transparent")
         control_container.pack(expand=True, fill="x")
 
+        # creating a temp variable to fix type checking issue
+        upload_window = self._upload_window
+
         CTkButton(
-            master=control_container, text="Close", command=self._upload_window.withdraw
+            master=control_container,
+            text="Close",
+            command=lambda: [upload_window.grab_release(), upload_window.withdraw()],
         ).pack(anchor="e")
+
+        self._upload_window.after(10, lambda: upload_window.grab_set())
 
         return self._label_states
 
     # callback
     def _upload_video_done(
-        self, status: bool, label_state: CTkLabel, additional_message: str = ""
+        self,
+        status: bool,
+        label_state: CTkLabel,
+        additional_message: str = "",
+        current_video_path_to_upload: str = "",
     ):
         """Call when video upload is done."""
         if not status:
@@ -403,5 +437,6 @@ class VideoWindow(CTkFrame):
                 ),
                 text_color="#D32F2F",
             )
+            self._uploaded_video.remove(current_video_path_to_upload)
         else:
-            label_state.configure(text="Done", text_color="#4CAF50")
+            label_state.configure(text=additional_message, text_color="#4CAF50")
