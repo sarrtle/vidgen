@@ -315,6 +315,11 @@ class VideoWindow(CTkFrame):
         # unpack data
         token, function = self._platform_data[platform_type]
 
+        # don't upload if not yet implemented
+        if platform_type in ["Instagram", "Tiktok", "Youtube"]:
+            messagebox.showwarning(title="Warning", message="Not yet implemented.")
+            return
+
         # check if token is valid
         if not token:
             messagebox.showerror(
