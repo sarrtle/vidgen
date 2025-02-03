@@ -183,7 +183,10 @@ class ApiWindow(CTkFrame):
         ).pack(side="left", anchor="w", pady=(0, 8))
         CTkComboBox(
             master=choose_model_frame,
-            values=["Llama-70b", "LLama-405b", "LLama-70b-Free"],
+            values=[
+                "meta-llama/Llama-3.3-70B-Instruct",
+                "meta-llama/Meta-Llama-3.1-405B-Instruct",
+            ],
             font=tkinter_font(),
             variable=self._deepinfra_text_model,
         ).pack(anchor="e", pady=(0, 8))
@@ -198,7 +201,10 @@ class ApiWindow(CTkFrame):
         ).pack(side="left", anchor="w", pady=(0, 8))
         CTkComboBox(
             master=choose_vision_frame,
-            values=["Llama-vision-big", "Llama-vision-small"],
+            values=[
+                "meta-llama/Llama-3.2-90B-Vision-Instruct",
+                "meta-llama/Llama-3.2-11B-Vision-Instruct",
+            ],
             font=tkinter_font(),
             variable=self._deepinfra_vision_model,
         ).pack(anchor="e", pady=(0, 8))

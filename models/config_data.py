@@ -52,10 +52,13 @@ class ApiDefaultSettings:
     gemini_token: str = ""
 
     # deepinfra api settings
-    deepinfra_text_model: Literal["Llama-70b", "Llama-405b"] = "Llama-70b"
-    deepinfra_vision_model: Literal["Llama-vision-vision-big", "Llama-vision-small"] = (
-        "Llama-vision-vision-big"
-    )
+    deepinfra_text_model: Literal[
+        "meta-llama/Llama-3.3-70B-Instruct", "meta-llama/Meta-Llama-3.1-405B-Instruct"
+    ] = "meta-llama/Llama-3.3-70B-Instruct"
+    deepinfra_vision_model: Literal[
+        "meta-llama/Llama-3.2-90B-Vision-Instruct",
+        "meta-llama/Llama-3.2-11B-Vision-Instruct",
+    ] = "meta-llama/Llama-3.2-90B-Vision-Instruct"
     deepinfra_token: str = ""
 
     # openai api settings

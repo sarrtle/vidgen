@@ -2,6 +2,7 @@
 
 from typing import Callable, Literal
 import google.generativeai as genai
+from openai import AuthenticationError, OpenAI
 
 from models.config_data import ConfigData
 from models.prompt import GeneratePrompt
@@ -57,7 +58,7 @@ class GenerateText:
             )
             return
 
-        # intiate and configuregemini
+        # intiate and configure gemini
         genai.configure(api_key=self._config_object.api_settings.gemini_token)
         model = genai.GenerativeModel(
             model_name=self._config_object.api_settings.gemini_text_model,
@@ -67,6 +68,60 @@ class GenerateText:
         response = model.generate_content(contents="What happened?")
 
         self._done_callback(response.text, False, None, None)
+
+    def _on_deepinfra_service(self):
+        """Request on API using Deepinfra service.
+
+        Will return boolean for the statuses response, if something
+        went wrong, it will handled by the tkinter.messagebox for
+        showing the error or warning.
+
+        Returns:
+            str: The generated response, if error or something went wrong,
+                then will return an empty string.
+
+        """
+        # handle error for no token on deepinfra
+        if not self._config_object.api_settings.deepinfra_token:
+            self._done_callback(
+                "",
+                True,
+                "No deepinfra token found!",
+                "Please input your deepinfra token first.",
+            )
+            return
+
+        # initiate and configue deepinfra
+        # Note: Openai client can be use for deepinfra
+        openai = OpenAI(
+            api_key=self._config_object.api_settings.deepinfra_token,
+            base_url="https://api.deepinfra.com/v1/openai",
+        )
+
+        try:
+            chat_completion = openai.chat.completions.create(
+                model=self._config_object.api_settings.deepinfra_text_model,
+                messages=[
+                    {"role": "system", "content": self._prompt},
+                    {"role": "user", "content": "What happened?"},
+                ],
+                stream=False,
+            )
+        except AuthenticationError:
+            self._done_callback(
+                "",
+                True,
+                "The api token is invalid.",
+                "Please input your valid deepinfra token.",
+            )
+            return
+
+        response = chat_completion.choices[0].message.content
+
+        if response is None:
+            response = ""
+
+        self._done_callback(response, False, None, None)
 
     def _on_no_service(self):
         """Return proper callback if a model is not yet implemented."""
@@ -89,6 +144,9 @@ class GenerateText:
 
         if chosen_service == "Gemini":
             self._on_gemini_service()
+
+        elif chosen_service == "DeepInfra":
+            self._on_deepinfra_service()
 
         # if some models are not yet implemented
         else:
