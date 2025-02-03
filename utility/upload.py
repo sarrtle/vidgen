@@ -157,7 +157,6 @@ def upload_to_facebook(
                 "upload_phase": "finish",
                 "video_state": "PUBLISHED",
                 "publish": "true",
-                "title": upload_data.title,
                 "description": upload_data.description + "\n" + upload_data.hashtags,
             }
             response = requests.post(url, params=parameters)
