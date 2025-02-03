@@ -123,6 +123,56 @@ class GenerateText:
 
         self._done_callback(response, False, None, None)
 
+    def _on_openai_service(self):
+        """Request and API using openai service.
+
+        Will return boolean for the statuses response, if something
+        went wrong, it will handled by the tkinter.messagebox for
+        showing the error or warning.
+
+        Returns:
+            str: The generated response, if error or something went wrong,
+                then will return an empty string.
+
+        """
+        # handle error for no  token on openai
+        if not self._config_object.api_settings.openai_token:
+            self._done_callback(
+                "",
+                True,
+                "No openai token found!",
+                "Please input your openai token first.",
+            )
+            return
+
+        # initiate and configue openai
+        openai = OpenAI(api_key=self._config_object.api_settings.openai_token)
+
+        try:
+            chat_completion = openai.chat.completions.create(
+                model=self._config_object.api_settings.openai_text_model,
+                messages=[
+                    {"role": "system", "content": self._prompt},
+                    {"role": "user", "content": "What happened?"},
+                ],
+                stream=False,
+            )
+        except AuthenticationError:
+            self._done_callback(
+                "",
+                True,
+                "The api token is invalid.",
+                "Please input your valid openai token.",
+            )
+            return
+
+        response = chat_completion.choices[0].message.content
+
+        if response is None:
+            response = ""
+
+        self._done_callback(response, False, None, None)
+
     def _on_no_service(self):
         """Return proper callback if a model is not yet implemented."""
         self._done_callback(
@@ -147,6 +197,9 @@ class GenerateText:
 
         elif chosen_service == "DeepInfra":
             self._on_deepinfra_service()
+
+        elif chosen_service == "Openai":
+            self._on_openai_service()
 
         # if some models are not yet implemented
         else:

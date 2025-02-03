@@ -62,8 +62,8 @@ class ApiDefaultSettings:
     deepinfra_token: str = ""
 
     # openai api settings
-    openai_text_model: Literal["Gpt-4o", "Gpt-4o-mini"] = "Gpt-4o"
-    openai_vision_model: Literal["Gpt-4o", "Gpt-4o-mini"] = "Gpt-4o"
+    openai_text_model: Literal["gpt-4o", "gpt-4o-mini"] = "gpt-4o"
+    openai_vision_model: Literal["gpt-4o", "gpt-4o-mini"] = "gpt-4o"
     openai_token: str = ""
 
     # deepgram api settings

@@ -250,7 +250,7 @@ class ApiWindow(CTkFrame):
         ).pack(side="left", anchor="w", pady=(0, 8))
         CTkComboBox(
             master=choose_model_frame,
-            values=["Gpt-4o", "Gpt-4o-mini"],
+            values=["gpt-4o", "gpt-4o-mini"],
             font=tkinter_font(),
             variable=self._openai_text_model,
         ).pack(anchor="e", pady=(0, 8))
@@ -265,7 +265,7 @@ class ApiWindow(CTkFrame):
         ).pack(side="left", anchor="w", pady=(0, 8))
         CTkComboBox(
             master=choose_vision_frame,
-            values=["Gpt-4o", "Gpt-4o-mini"],
+            values=["gpt-4o", "gpt-4o-mini"],
             font=tkinter_font(),
             variable=self._openai_vision_model,
         ).pack(anchor="e", pady=(0, 8))
