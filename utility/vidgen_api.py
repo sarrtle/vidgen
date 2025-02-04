@@ -1,7 +1,7 @@
 """All API for generating the video."""
 
-from os import mkdir
-from os.path import isdir, isfile
+from os import listdir, mkdir
+from os.path import isdir, isfile, join
 from random import uniform
 from PIL import ImageFont, Image
 from moviepy import (
@@ -59,7 +59,8 @@ class VidGen:
 
         # text manipulation
         self.font_size: int = 80
-        self.font: str = self.load_font()
+        self.font: str = ""
+        self.load_font(join("assets/fonts/", listdir("assets/fonts/")[0]))
         self.font_object: ImageFont.FreeTypeFont = ImageFont.truetype(
             font=self.font, size=self.font_size
         )
@@ -141,17 +142,14 @@ class VidGen:
         """Check if the video is loaded."""
         return self._video_file_clip is not None
 
-    def load_font(self, default: bool = True, filepath: str | None = None) -> str:
+    def load_font(self, filepath: str):
         """Load font to be use in the video."""
-        default_font = "assets/fonts/futura-extra-bold.ttf"
-
-        if default:
-            return default_font
-
-        if filepath is None:
-            return default_font
-
-        return filepath
+        """
+        TODO: 
+            Get the font path from the config and join with assets folder
+        """
+        self.font = filepath
+        self.font_object = ImageFont.truetype(font=self.font, size=self.font_size)
 
     def get_render_image(self) -> Image.Image:
         """Get a rendered image from the video and text.

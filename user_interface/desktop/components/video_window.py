@@ -90,15 +90,6 @@ class VideoWindow(CTkFrame):
                 self._config_data.api_settings.facebook_token,
                 upload_to_facebook,
             ),
-            "Instagram": (
-                self._config_data.api_settings.instagram_token,
-                upload_to_facebook,
-            ),
-            "Tiktok": (self._config_data.api_settings.tiktok_token, upload_to_facebook),
-            "Youtube": (
-                self._config_data.api_settings.youtube_token,
-                upload_to_facebook,
-            ),
         }
 
         # setup containers
@@ -206,22 +197,16 @@ class VideoWindow(CTkFrame):
 
         # upload buttons
         upload_frame = CTkFrame(master=main_frame)
-        upload_frame.pack(anchor="center", expand=True)
+        upload_frame.pack(anchor="w", expand=True, fill="x")
 
-        CTkLabel(master=upload_frame, text="Upload").grid(
-            row=0, column=0, columnspan=2, sticky="w", pady=(0, 10)
-        )
-
-        for index, social in enumerate(self._platform_data.keys()):
-            row = (index // 2) + 1  # Determine row (integer division)
-            col = index % 2  # Determine column (remainder)
-            CTkButton(
-                master=upload_frame,
-                text=social,
-                command=lambda platform_type=social: self._on_social_upload_clicked(
-                    platform_type
-                ),
-            ).grid(row=row, column=col, padx=4, pady=4)
+        CTkLabel(master=upload_frame, text="Upload").pack(anchor="w", side="left")
+        CTkButton(
+            master=upload_frame,
+            text="Facebook",
+            command=lambda platform_type="Facebook": self._on_social_upload_clicked(
+                platform_type
+            ),
+        ).pack(anchor="e")
 
     def _load_videos_to_ui(self):
         """Load videos to ui."""
@@ -315,11 +300,6 @@ class VideoWindow(CTkFrame):
         # unpack data
         token, function = self._platform_data[platform_type]
 
-        # don't upload if not yet implemented
-        if platform_type in ["Instagram", "Tiktok", "Youtube"]:
-            messagebox.showwarning(title="Warning", message="Not yet implemented.")
-            return
-
         # check if token is valid
         if not token:
             messagebox.showerror(
@@ -376,7 +356,7 @@ class VideoWindow(CTkFrame):
 
         # create a top level window
         self._upload_window = CTkToplevel(self)
-        self._upload_window.geometry("400x300")
+        self._upload_window.geometry("400x200")
         self._upload_window.title("Uploading video")
 
         # make the window float on LINUX only

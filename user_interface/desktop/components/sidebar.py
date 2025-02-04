@@ -14,8 +14,6 @@ from typing import Any, Callable, override
 from collections.abc import Sequence
 from customtkinter import CTkButton, CTkFrame, ThemeManager
 
-from user_interface.desktop.components.no_window import NoWindow
-
 
 class _SidebarButton(CTkButton):
     """Sidebar button for the sidebar component.
@@ -89,7 +87,7 @@ class Sidebar(CTkFrame):
 
     def _add_sidebar_buttons(self):
         """Add the sidebar buttons dynamically."""
-        sidebar_names = ["Story", "Riddle", "Music", "Videos", "Clips", "Api"]
+        sidebar_names = ["Create", "Videos", "Clips", "Api"]
 
         for sidebar_name in sidebar_names:
             sidebar_button = _SidebarButton(
@@ -106,7 +104,6 @@ class Sidebar(CTkFrame):
 
     def on_select_sidebar_button(self, button_text: str):
         """Do something when one of the sidebar button was selected."""
-        no_window_content = ["Riddle", "Music"]
         for button in self._sidebar_buttons:
             if button.text == button_text:
                 # TODO: Get theme or original color as utility
@@ -121,13 +118,10 @@ class Sidebar(CTkFrame):
 
                 # get selected sidebar component
                 current_selected = None
-                if button_text in no_window_content:
-                    current_selected = NoWindow(master=self._master_frame)
 
-                else:
-                    for sidebar_component in self._sidebar_components:
-                        if sidebar_component.__dict__.get("name") == button_text:
-                            current_selected = sidebar_component
+                for sidebar_component in self._sidebar_components:
+                    if sidebar_component.__dict__.get("name") == button_text:
+                        current_selected = sidebar_component
 
                 if current_selected is None:
                     current_selected = self._previous_selected

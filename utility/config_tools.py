@@ -15,13 +15,10 @@ def save_api_config(config_object: ConfigData):
     data = {
         "api_settings": {
             "gemini_text_model": config_object.api_settings.gemini_text_model,
-            "gemini_vision_model": config_object.api_settings.gemini_vision_model,
             "gemini_token": config_object.api_settings.gemini_token,
             "deepinfra_text_model": config_object.api_settings.deepinfra_text_model,
-            "deepinfra_vision_model": config_object.api_settings.deepinfra_vision_model,
             "deepinfra_token": config_object.api_settings.deepinfra_token,
             "openai_text_model": config_object.api_settings.openai_text_model,
-            "openai_vision_model": config_object.api_settings.openai_vision_model,
             "openai_token": config_object.api_settings.openai_token,
             "deepgram_token": config_object.api_settings.deepgram_token,
             "facebook_token": config_object.api_settings.facebook_token,
@@ -73,13 +70,10 @@ def load_config_object() -> ConfigData:
     # load the api settings
     api_settings = ApiDefaultSettings(
         gemini_text_model=config_data["api_settings"]["gemini_text_model"],
-        gemini_vision_model=config_data["api_settings"]["gemini_vision_model"],
         gemini_token=config_data["api_settings"]["gemini_token"],
         deepinfra_text_model=config_data["api_settings"]["deepinfra_text_model"],
-        deepinfra_vision_model=config_data["api_settings"]["deepinfra_vision_model"],
         deepinfra_token=config_data["api_settings"]["deepinfra_token"],
         openai_text_model=config_data["api_settings"]["openai_text_model"],
-        openai_vision_model=config_data["api_settings"]["openai_vision_model"],
         openai_token=config_data["api_settings"]["openai_token"],
         deepgram_token=config_data["api_settings"]["deepgram_token"],
         facebook_token=config_data["api_settings"]["facebook_token"],

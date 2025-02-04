@@ -1,6 +1,7 @@
 """The sidebar content of story section from the sidebar."""
 
-from os.path import isfile
+from os import listdir
+from os.path import isfile, join
 from platform import system
 from tkinter import messagebox, filedialog
 from typing import Any, override
@@ -53,7 +54,7 @@ class StoryWindow(CTkFrame):
 
         """
         super().__init__(master, **kwargs)
-        self.name: str = "Story"
+        self.name: str = "Create"
 
         # important variables
         self._config_data: ConfigData = config_data
@@ -255,6 +256,7 @@ class StoryWindow(CTkFrame):
         ).pack(anchor="e", padx=16, pady=(0, 16))
 
         # text font
+        font_files = listdir("assets/fonts/")
         text_font_frame = CTkFrame(master=video_options_frame, fg_color="transparent")
         text_font_frame.pack(fill="x", expand=True)
         CTkLabel(
@@ -264,11 +266,17 @@ class StoryWindow(CTkFrame):
         ).pack(side="left", anchor="w", padx=16, pady=(0, 16))
         CTkComboBox(
             master=text_font_frame,
-            values=["default", "Futura", "Monosans"],
+            values=font_files,
             font=tkinter_font(),
             variable=self._text_font_variable,
-            command=lambda _: self._save_story_settings_to_config(),
+            command=lambda _: self._on_choose_font_select,
         ).pack(anchor="e", padx=16, pady=(0, 16))
+
+        #   validate font availability
+        if self._config_data.story_settings.font not in font_files:
+            self._config_data.story_settings.font = font_files[0]
+            save_api_config(self._config_data)
+
         self._text_font_variable.set(value=self._config_data.story_settings.font)
 
         # text color
@@ -427,6 +435,8 @@ class StoryWindow(CTkFrame):
 
         self._clip_path = clip
         self._video_file_clip.load_background_video(self._clip_path)
+        font_path = join("assets/fonts", self._config_data.story_settings.font)
+        self._video_file_clip.load_font(font_path)
 
         # load image preview
         image = self._video_file_clip.get_render_image()
@@ -587,6 +597,12 @@ class StoryWindow(CTkFrame):
         self._stroke_save_schedule = self.after(
             ms=300, func=self._save_story_settings_to_config
         )
+
+    def _on_choose_font_select(self):
+        """Update font on vidgen object if new font is selected."""
+        font_file_path = join("assets/fonts/", self._text_font_variable.get())
+        self._video_file_clip.load_font(font_file_path)
+        self._save_story_settings_to_config()
 
     # callbacks
     def _on_done_generate_idea(

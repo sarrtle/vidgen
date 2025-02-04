@@ -46,24 +46,16 @@ class ApiDefaultSettings:
 
     # gemini free model API settings
     gemini_text_model: Literal["gemini-1.5-pro", "gemini-1.5-flash"] = "gemini-1.5-pro"
-    gemini_vision_model: Literal["gemini-1.5-pro", "gemini-1.5-flash"] = (
-        "gemini-1.5-pro"
-    )
     gemini_token: str = ""
 
     # deepinfra api settings
     deepinfra_text_model: Literal[
         "meta-llama/Llama-3.3-70B-Instruct", "meta-llama/Meta-Llama-3.1-405B-Instruct"
     ] = "meta-llama/Llama-3.3-70B-Instruct"
-    deepinfra_vision_model: Literal[
-        "meta-llama/Llama-3.2-90B-Vision-Instruct",
-        "meta-llama/Llama-3.2-11B-Vision-Instruct",
-    ] = "meta-llama/Llama-3.2-90B-Vision-Instruct"
     deepinfra_token: str = ""
 
     # openai api settings
     openai_text_model: Literal["gpt-4o", "gpt-4o-mini"] = "gpt-4o"
-    openai_vision_model: Literal["gpt-4o", "gpt-4o-mini"] = "gpt-4o"
     openai_token: str = ""
 
     # deepgram api settings

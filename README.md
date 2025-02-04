@@ -1,5 +1,5 @@
 # VidGen
-A tool for automating video creation, such as generating Reddit-style stories with Minecraft parkour in the background, creating riddles and puzzles, or turning social media comments into music.
+A tool for automating video creation of Reddit-style stories with Minecraft parkour. 
 ![Sample Image](assets/github/story-sample.png)
 
 > [!WARNING]

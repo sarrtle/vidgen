@@ -94,4 +94,4 @@ class DesktopApp(CTk):
         sidebar.register_components(components)
 
         # default selection
-        sidebar.on_select_sidebar_button("Story")
+        sidebar.on_select_sidebar_button("Create")

@@ -145,13 +145,11 @@ class ClipsWindow(CTkFrame):
         )
         self._clip_thumbnail_preview.pack(pady=(0, 8))
 
-        CTkButton(master=center_frame, text="play").pack(fill="x", pady=(0, 8))
         CTkButton(
             master=center_frame,
             text="delete",
-            fg_color="transparent",
-            border_width=1,
-            border_color="gray",
+            fg_color="#e74c3c",
+            hover_color="#c0392b",
             command=self._on_delete_clip_clicked,
         ).pack(fill="x")
 

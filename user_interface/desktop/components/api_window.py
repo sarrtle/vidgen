@@ -40,20 +40,14 @@ class ApiWindow(CTkFrame):
 
         # save and load values
         self._gemini_text_model: StringVar = StringVar()
-        self._gemini_vision_model: StringVar = StringVar()
         self._gemini_api_entry: CTkEntry
         self._deepinfra_text_model: StringVar = StringVar()
-        self._deepinfra_vision_model: StringVar = StringVar()
         self._deepinfra_api_entry: CTkEntry
         self._openai_text_model: StringVar = StringVar()
-        self._openai_vision_model: StringVar = StringVar()
         self._openai_api_entry: CTkEntry
         self._deepgram_api_entry: CTkEntry
         self._fb_api_entry: CTkEntry
         self._fb_page_entry: CTkEntry
-        self._instagram_api_entry: CTkEntry
-        self._tiktok_api_entry: CTkEntry
-        self._youtube_api_entry: CTkEntry
 
         # main frames
         scrollable_container: CTkScrollableFrame = CTkScrollableFrame(master=self)
@@ -88,7 +82,7 @@ class ApiWindow(CTkFrame):
 
     def _setup_gemini_settings(self):
         """Set up gemini settings widgets."""
-        main_gemini_frame = CTkFrame(self._center_container, width=600, height=180)
+        main_gemini_frame = CTkFrame(self._center_container, width=600, height=150)
         main_gemini_frame.pack_propagate(False)
         main_gemini_frame.pack(pady=(0, 20))
 
@@ -114,21 +108,6 @@ class ApiWindow(CTkFrame):
         ).pack(anchor="e", pady=(0, 8))
         self._gemini_text_model.set(
             value=self._config_data.api_settings.gemini_text_model
-        )
-
-        choose_vision_frame = CTkFrame(gemini_frame, fg_color="transparent")
-        choose_vision_frame.pack(fill="x")
-        CTkLabel(
-            master=choose_vision_frame, text="Vision model", font=tkinter_font()
-        ).pack(side="left", anchor="w", pady=(0, 8))
-        CTkComboBox(
-            master=choose_vision_frame,
-            values=["gemini-1.5-pro", "gemini-1.5-flash"],
-            font=tkinter_font(),
-            variable=self._gemini_vision_model,
-        ).pack(anchor="e", pady=(0, 8))
-        self._gemini_vision_model.set(
-            value=self._config_data.api_settings.gemini_vision_model
         )
 
         api_token_frame = CTkFrame(gemini_frame, fg_color="transparent")
@@ -163,7 +142,7 @@ class ApiWindow(CTkFrame):
             Gaps between widgets are 8 pixels.
 
         """
-        main_deepinfra_frame = CTkFrame(self._center_container, width=600, height=180)
+        main_deepinfra_frame = CTkFrame(self._center_container, width=600, height=150)
         main_deepinfra_frame.pack_propagate(False)
         main_deepinfra_frame.pack(pady=(0, 20))
 
@@ -194,24 +173,6 @@ class ApiWindow(CTkFrame):
             value=self._config_data.api_settings.deepinfra_text_model
         )
 
-        choose_vision_frame = CTkFrame(deepinfra_frame, fg_color="transparent")
-        choose_vision_frame.pack(fill="x")
-        CTkLabel(
-            master=choose_vision_frame, text="Vision model", font=tkinter_font()
-        ).pack(side="left", anchor="w", pady=(0, 8))
-        CTkComboBox(
-            master=choose_vision_frame,
-            values=[
-                "meta-llama/Llama-3.2-90B-Vision-Instruct",
-                "meta-llama/Llama-3.2-11B-Vision-Instruct",
-            ],
-            font=tkinter_font(),
-            variable=self._deepinfra_vision_model,
-        ).pack(anchor="e", pady=(0, 8))
-        self._deepinfra_vision_model.set(
-            value=self._config_data.api_settings.deepinfra_vision_model
-        )
-
         api_token_frame = CTkFrame(deepinfra_frame, fg_color="transparent")
         api_token_frame.pack(fill="x")
         CTkLabel(master=api_token_frame, text="Api Token", font=tkinter_font()).pack(
@@ -230,7 +191,7 @@ class ApiWindow(CTkFrame):
 
     def _setup_openai_settings(self):
         """Set up openai settings widgets."""
-        main_openai_frame = CTkFrame(self._center_container, width=600, height=180)
+        main_openai_frame = CTkFrame(self._center_container, width=600, height=150)
         main_openai_frame.pack_propagate(False)
         main_openai_frame.pack(pady=(0, 20))
 
@@ -256,21 +217,6 @@ class ApiWindow(CTkFrame):
         ).pack(anchor="e", pady=(0, 8))
         self._openai_text_model.set(
             value=self._config_data.api_settings.openai_text_model
-        )
-
-        choose_vision_frame = CTkFrame(openai_frame, fg_color="transparent")
-        choose_vision_frame.pack(fill="x")
-        CTkLabel(
-            master=choose_vision_frame, text="Vision model", font=tkinter_font()
-        ).pack(side="left", anchor="w", pady=(0, 8))
-        CTkComboBox(
-            master=choose_vision_frame,
-            values=["gpt-4o", "gpt-4o-mini"],
-            font=tkinter_font(),
-            variable=self._openai_vision_model,
-        ).pack(anchor="e", pady=(0, 8))
-        self._openai_vision_model.set(
-            value=self._config_data.api_settings.openai_vision_model
         )
 
         api_token_frame = CTkFrame(openai_frame, fg_color="transparent")
@@ -325,7 +271,7 @@ class ApiWindow(CTkFrame):
     def _setup_social_api_settings(self):
         """Set up social api settings widgets."""
         main_social_frame = CTkFrame(
-            master=self._center_container, width=600, height=250
+            master=self._center_container, width=600, height=150
         )
         main_social_frame.pack_propagate(False)
         main_social_frame.pack(pady=(0, 12))
@@ -362,65 +308,12 @@ class ApiWindow(CTkFrame):
         )
         self._fb_page_entry.pack(anchor="e")
 
-        # instagram
-        instagram_token_frame = CTkFrame(social_frame, fg_color="transparent")
-        instagram_token_frame.pack(fill="x", pady=(0, 8))
-        CTkLabel(
-            master=instagram_token_frame,
-            text="Instagram token",
-            font=tkinter_font(),
-        ).pack(side="left", anchor="w")
-        self._instagram_api_entry = CTkEntry(
-            master=instagram_token_frame,
-            placeholder_text="IGQ*****",
-        )
-        self._instagram_api_entry.pack(anchor="e")
-
-        # tiktok
-        tiktok_token_frame = CTkFrame(social_frame, fg_color="transparent")
-        tiktok_token_frame.pack(fill="x", pady=(0, 8))
-        CTkLabel(
-            master=tiktok_token_frame, text="Tiktok token", font=tkinter_font()
-        ).pack(side="left", anchor="w")
-        self._tiktok_api_entry = CTkEntry(
-            master=tiktok_token_frame,
-            placeholder_text="tiktok token",
-        )
-        self._tiktok_api_entry.pack(anchor="e")
-
-        # youtube
-        youtube_token_frame = CTkFrame(social_frame, fg_color="transparent")
-        youtube_token_frame.pack(fill="x")
-        CTkLabel(
-            master=youtube_token_frame, text="Youtube token", font=tkinter_font()
-        ).pack(side="left", anchor="w")
-        self._youtube_api_entry = CTkEntry(
-            master=youtube_token_frame,
-            placeholder_text="youtube token",
-        )
-        self._youtube_api_entry.pack(anchor="e")
-
         # load config values
         if self._config_data.api_settings.facebook_token:
             self._fb_api_entry.insert(0, self._config_data.api_settings.facebook_token)
 
         if self._config_data.api_settings.facebook_page:
             self._fb_page_entry.insert(0, self._config_data.api_settings.facebook_page)
-
-        if self._config_data.api_settings.instagram_token:
-            self._instagram_api_entry.insert(
-                0, self._config_data.api_settings.instagram_token
-            )
-
-        if self._config_data.api_settings.tiktok_token:
-            self._tiktok_api_entry.insert(
-                0, self._config_data.api_settings.tiktok_token
-            )
-
-        if self._config_data.api_settings.youtube_token:
-            self._youtube_api_entry.insert(
-                0, self._config_data.api_settings.youtube_token
-            )
 
     def _get_entry_values(self, entry: CTkEntry | None) -> str | None:
         """Dynamically get the values from text entry widgets.
@@ -440,25 +333,16 @@ class ApiWindow(CTkFrame):
         """Save API settings to `config.json` local file."""
         # save all values
         self._config_data.api_settings.gemini_text_model = self._gemini_text_model.get()
-        self._config_data.api_settings.gemini_vision_model = (
-            self._gemini_vision_model.get()
-        )
         self._config_data.api_settings.gemini_token = self._gemini_api_entry.get()
 
         self._config_data.api_settings.deepinfra_text_model = (
             self._deepinfra_text_model.get()
-        )
-        self._config_data.api_settings.deepinfra_vision_model = (
-            self._deepinfra_vision_model.get()
         )
         self._config_data.api_settings.deepinfra_token = self._get_entry_values(
             self._deepinfra_api_entry
         )
 
         self._config_data.api_settings.openai_text_model = self._openai_text_model.get()
-        self._config_data.api_settings.openai_vision_model = (
-            self._openai_vision_model.get()
-        )
         self._config_data.api_settings.openai_token = self._get_entry_values(
             self._openai_api_entry
         )
@@ -473,18 +357,6 @@ class ApiWindow(CTkFrame):
 
         self._config_data.api_settings.facebook_page = self._get_entry_values(
             self._fb_page_entry
-        )
-
-        self._config_data.api_settings.instagram_token = self._get_entry_values(
-            self._instagram_api_entry
-        )
-
-        self._config_data.api_settings.tiktok_token = self._get_entry_values(
-            self._tiktok_api_entry
-        )
-
-        self._config_data.api_settings.youtube_token = self._get_entry_values(
-            self._youtube_api_entry
         )
 
         save_api_config(config_object=self._config_data)
