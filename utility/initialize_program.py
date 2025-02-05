@@ -3,6 +3,7 @@
 All things that will be done on beginning of the startup
 will be put here.
 """
+
 from os import environ, mkdir, listdir, remove
 from os.path import isdir, join
 
@@ -28,3 +29,10 @@ cache_files = listdir("cache/")
 for cache_file in cache_files:
     cache_file_path = join("cache", cache_file)
     remove(cache_file_path)
+
+# create important folders
+if not isdir("videos"):
+    mkdir("videos")
+
+if not isdir("assets/clips"):
+    mkdir("assets/clips")
