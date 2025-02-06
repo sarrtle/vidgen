@@ -484,7 +484,7 @@ class StoryWindow(CTkFrame):
 
         # load audio file to vidgen audio clips
         audio_clip = AudioFileClip(filename)
-        self._video_file_clip.add_audio(audio_clip)
+        self._video_file_clip.add_solo_voiceover(audio_clip)
 
         # play audio preview
         play_voiceover(filepath=filename)
@@ -559,6 +559,22 @@ class StoryWindow(CTkFrame):
 
         # make sure the behind windows are not interactable
         render_video_window.after(10, lambda: render_video_window.grab_set())
+
+        # check if the audio is already generated
+        audio_file = create_audio_filename(
+            script=script_context,
+            voice_model_name=self._config_data.story_settings.voice_model,
+        )
+        if not isfile(audio_file):
+            # generate an audio
+            generate_voice = GenerateVoice(
+                script=script_context, config_data=self._config_data
+            )
+            generate_voice.generate()
+            self._video_file_clip.add_solo_voiceover(AudioFileClip(audio_file))
+
+        # reset the video object
+        self._video_file_clip.reset()
 
         # render moviepy on thread here
         render_story = RenderStory(

@@ -1,7 +1,6 @@
 """Voice generation module."""
 
 import json
-from os.path import isfile
 from tkinter import messagebox
 from typing import Any
 from deepgram import (
@@ -41,10 +40,6 @@ class GenerateVoice:
             script=self._script,
             voice_model_name=self._config_data.story_settings.voice_model,
         )
-
-        # check if exists, or generate
-        if not isfile(filepath):
-            self.generate()
 
         # open audio file as bytes
         with open(filepath, "rb") as file:

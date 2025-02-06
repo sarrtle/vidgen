@@ -1,13 +1,12 @@
 """All API for generating the video."""
 
-from os import listdir, mkdir
-from os.path import isdir, isfile, join
+from os import listdir
+from os.path import isfile, join
 from random import uniform
 from PIL import ImageFont, Image
 from moviepy import (
     AudioClip,
     AudioFileClip,
-    CompositeAudioClip,
     CompositeVideoClip,
     ImageClip,
     TextClip,
@@ -68,6 +67,7 @@ class VidGen:
         # clips
         self._text_clips: list[TextClip] = []
         self._audio_clips: list[AudioClip] = []
+        self._solo_voiceover: AudioClip
         self._image_clips: list[ImageClip] = []
 
     def load_background_video(self, filepath: str):
@@ -200,6 +200,10 @@ class VidGen:
             else self._audio_clips.extend(audio_clip)
         )
 
+    def add_solo_voiceover(self, audio_clip: AudioClip) -> None:
+        """Add audio clip to Vidgen as a solo voiceover."""
+        self._solo_voiceover = audio_clip
+
     def add_image_clip(self, image_clip: ImageClip | list[ImageClip]) -> None:
         """Add image clip to Vidgen.
 
@@ -241,16 +245,12 @@ class VidGen:
         final_clip = CompositeVideoClip(
             clips=[self._video_file_clip] + self._image_clips + self._text_clips
         )
-        audio_clip = CompositeAudioClip(clips=self._audio_clips)
-        video_duration = audio_clip.duration + 1
+
+        video_duration = self._solo_voiceover.duration + 1
 
         # set audio
-        final_clip = final_clip.with_audio(audio_clip)
         final_clip = final_clip.with_duration(video_duration)
-
-        # make sure videos folder exists
-        if not isdir("videos"):
-            mkdir("videos")
+        final_clip = final_clip.with_audio(self._solo_voiceover)
 
         # render
         filename = self.get_video_filepath()
@@ -261,6 +261,15 @@ class VidGen:
             preset="fast",
             logger=custom_callback,
         )
+
+    def reset(self) -> None:
+        """Reset Vidgen.
+
+        Will remove all clips.
+        """
+        self._text_clips.clear()
+        self._audio_clips.clear()
+        self._image_clips.clear()
 
     def close(self) -> None:
         """Free self from memory."""
