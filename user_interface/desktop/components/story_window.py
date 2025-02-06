@@ -37,7 +37,15 @@ from utility.config_tools import save_api_config
 
 
 class StoryWindow(CTkFrame):
-    """Story window contents."""
+    """Story window contents.
+
+    Attributes:
+        name (str): The name of the component used in sidebar for checking.
+
+    Methods:
+        pack(**kwargs: Any): Render the component to the main window.
+
+    """
 
     def __init__(self, master: CTkFrame, config_data: ConfigData, **kwargs: Any):
         """Initialize story window.

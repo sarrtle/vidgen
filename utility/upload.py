@@ -49,9 +49,6 @@ def upload_to_facebook(
         label_state (CTkLabel): Update the state of the label from ui.
         done_callback (Callable[[bool, CTkLabel, str], None]): Callback when upload is done.
 
-    Raises:
-        TODO:ErrorException
-
     """
     # Initialize label state
     label_state.configure(text="Uploading...", text_color="#FFC107")

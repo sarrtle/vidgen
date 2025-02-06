@@ -1,6 +1,9 @@
 """The Api content section from the sidebar.
 
 Manage API configurations and change AI model.
+
+Class:
+    ApiWindow: Api window contents
 """
 
 from tkinter import messagebox
@@ -21,7 +24,16 @@ from utility.tools import tkinter_font
 
 
 class ApiWindow(CTkFrame):
-    """Api window contents."""
+    """Api window contents.
+
+    Attributes:
+        name (str): The name of the component used in sidebar for checking
+            and algorithm.
+
+    Methods:
+        pack(**kwargs: Any): Render the component to the main window.
+
+    """
 
     def __init__(self, master: CTkFrame, config_data: ConfigData, **kwargs: Any):
         """Initialize Api Window.
@@ -319,7 +331,7 @@ class ApiWindow(CTkFrame):
         """Dynamically get the values from text entry widgets.
 
         Args:
-            entry (customtkinter.CTkEntry): The entry widget.
+            entry (customtkinter.CTkEntry | None): The entry widget.
 
         Returns:
             str | None: The value of the entry widget otherwise None

@@ -15,7 +15,21 @@ from utility.vidgen_api import VidGen
 
 
 class RenderStory:
-    """RenderStory object."""
+    """RenderStory object.
+
+    Args:
+        script (str): The generated or pasted script context story.
+        config_data (models.ConfigData): The project configurations.
+        vidgen_object (utility.Vidgen): The initialized Vidgen object.
+        progress_bar_variable (Variable): The progress bar variable.
+        progress_label_variable (CTkLabel): The progress label variable.
+        done_callback (Callable[[], None]): The callback function when done.
+
+    Methods:
+        render_three_words(): Render the video on one three words style format.
+        render_one_word(): Render the video on one word style format.
+
+    """
 
     def __init__(
         self,
@@ -26,17 +40,7 @@ class RenderStory:
         progress_label_variable: CTkLabel,
         done_callback: Callable[[], None],
     ):
-        """Initialize RenderStory.
-
-        Args:
-            script (str): The generated or pasted script context story.
-            config_data (models.ConfigData): The project configurations.
-            vidgen_object (utility.Vidgen): The initialized Vidgen object.
-            progress_bar_variable (Variable): The progress bar variable.
-            progress_label_variable (CTkLabel): The progress label variable.
-            done_callback (Callable[[], None]): The callback function when done.
-
-        """
+        """Initialize RenderStory."""
         self._script: str = script
         self._config_data: ConfigData = config_data
         self._vidgen_object: VidGen = vidgen_object

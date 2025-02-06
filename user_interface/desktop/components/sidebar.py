@@ -19,6 +19,13 @@ class _SidebarButton(CTkButton):
     """Sidebar button for the sidebar component.
 
     This is only for the Sidebar class to use.
+
+    Attributes:
+        text (str): The text on the button.
+
+    Methods:
+        pack(**kwargs: Any): Render the component to the sidebar frame.
+
     """
 
     def __init__(
@@ -33,10 +40,6 @@ class _SidebarButton(CTkButton):
             **kwargs (Any): What CtkFrame needs.
 
         Notes:
-            Any changes made when packing or rendering the
-            component or widget are done on the method:
-            `Sidebar.render`
-
             All sidebar buttons are inside the Sidebar._inner_frame variable
             for some design purposes.
 
@@ -54,7 +57,14 @@ class _SidebarButton(CTkButton):
 
 
 class Sidebar(CTkFrame):
-    """Sidebar component."""
+    """Sidebar component.
+
+    Methods:
+        on_select_sidebar_button(button_text: str): Do something when one of the sidebar button was selected.
+        register_components(list_objects: Sequence[CTkFrame]): Register all sidebar componets.
+        pack(**kwargs: Any): Render the component to the main window.
+
+    """
 
     def __init__(self, master: CTkFrame, **kwargs: Any):
         """Initialize Sidebar.
@@ -64,10 +74,6 @@ class Sidebar(CTkFrame):
             **kwargs (Any): What CtkFrame needs.
 
         Note:
-            Any changes made when packing or rendering the
-            component or widget are done on the method:
-            `Sidebar.render`
-
             All sidebar buttons are inside the Sidebar._inner_frame variable
             for some design purposes.
 
@@ -103,7 +109,12 @@ class Sidebar(CTkFrame):
             self._sidebar_buttons.append(sidebar_button)
 
     def on_select_sidebar_button(self, button_text: str):
-        """Do something when one of the sidebar button was selected."""
+        """Do something when one of the sidebar button was selected.
+
+        Args:
+            button_text (str): The text on the button.
+
+        """
         for button in self._sidebar_buttons:
             if button.text == button_text:
                 # TODO: Get theme or original color as utility
@@ -140,6 +151,10 @@ class Sidebar(CTkFrame):
 
         All components will be use later for showing and hiding
         windows while clicking sidebar buttons.
+
+        Args:
+            list_objects (Sequence[CTkFrame]): The list of components.
+
         """
         self._sidebar_components = list_objects
         self._previous_selected = list_objects[0]

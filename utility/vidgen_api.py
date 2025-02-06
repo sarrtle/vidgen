@@ -33,9 +33,23 @@ class VidGen:
         font_object (ImageFont.FreeTypeFont): The font object of the text.
 
     Methods:
-        load_video: Lazily load the video into moviepy.
-        load_font: Load font to be use in the video.
+        load_background_video(filepath: str): Lazily load the video into moviepy.
+        randomize_clip_position(script: str, config_data: ConfigData):
+            Randomize the position of the clip.
+        is_background_video_loaded: Check if the video is loaded.
+        load_font(filepath: str): Load font to be use in the video.
         get_render_image: Get a rendered image form the video and text.
+        add_text_clip(text_clip: TextClip | list[TextClip]):
+            Add text clip to Vidgen.
+        add_image_clip(image_clip: ImageClip | list[ImageClip]):
+            Add image clip to Vidgen.
+        add_audio(audio_clip: AudioFileClip | list[AudioFileClip]):
+            Add audio clip to Vidgen.
+        add_solo_voiceover(audio_clip: AudioClip): Add audio clip to Vidgen.
+        get_video_filepath: Get video filepath.
+        render(custom_callback: CustomMoviepyLogger): Render the the clips into video.
+        reset: Reset the Vidgen.
+        close: Free self from memory.
 
     """
 

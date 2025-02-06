@@ -37,8 +37,12 @@ def download_youtube_video(url: str, progress_hook: Callable[[dict[str, Any]], N
 def tkinter_font(size: int = 14, weight: Literal["normal", "bold"] = "normal"):
     """Create font with custom tkinter.
 
-    Notes:
-        This is for the desktop user interface only.
+    Args:
+        size (int): The size of the font.
+        weight (Literal["normal", "bold"]): The weight of the font.
+
+    Returns:
+        CTkFont: The CTkFont object.
 
     """
     return CTkFont("assets/font/futura-extra-bold.ttf", size=size, weight=weight)
@@ -55,6 +59,15 @@ def human_readable_size(bytes_number: int):
 
 
 def create_hash_content(string: str):
+    """Generate hash content from string.
+
+    Args:
+        string (str): The string to hash.
+
+    Returns:
+        str: The generated hash string.
+
+    """
     hash_object = hashlib.sha256(string.encode())
     content_hash = hash_object.hexdigest()
     return content_hash

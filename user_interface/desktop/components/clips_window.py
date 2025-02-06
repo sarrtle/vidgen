@@ -43,7 +43,15 @@ EXAMPLE_YOUTUBE_LINKS = [
 
 
 class ClipsWindow(CTkFrame):
-    """Clips window content."""
+    """Clips window content.
+
+    Attributes:
+        name (str): The name of the component used in sidebar for checking.
+
+    Methods:
+        pack(**kwargs: Any): Render the component to the main window.
+
+    """
 
     def __init__(self, master: CTkFrame, config_data: ConfigData, **kwargs: Any):
         """Initialize ClipsWindow.
@@ -168,6 +176,10 @@ class ClipsWindow(CTkFrame):
         for clip_widget in self._clip_list_widgets:
             clip_widget.destroy()
 
+        # reset variables
+        self._clip_list_widgets = []
+        self._previous_selected = None
+
         # refresh the clips
         list_of_clips = listdir("assets/clips/")
 
@@ -242,18 +254,6 @@ class ClipsWindow(CTkFrame):
         """Render the component to the main window."""
         super().pack(expand=True, fill="both", side="left", anchor="w")
 
-    # Button commands
-    def download_youtube_video(self):
-        """Download youtube video using the link from entry."""
-        # Handling with correct links
-        link = self._link_entry.get()
-        if not link.startswith("https://"):
-            messagebox.showwarning(
-                title="Invalid URL", message="Please enter a valid URL."
-            )
-
-        # download_youtube_video(link)
-
     def _on_clip_clicked(self, widget: CTkButton):
         """Handle when clip was clicked.
 
@@ -318,9 +318,6 @@ class ClipsWindow(CTkFrame):
         )
         self._clip_thumbnail_preview.configure(image=thumbnail, text="Preview")
 
-        # remove the preview previous selected
-        self._previous_selected = None
-
         # reload clips to UI
         self._load_clips_to_ui()
 
@@ -329,6 +326,12 @@ class ClipsWindow(CTkFrame):
         # ensure there is a value in the link first
         if not self._link_entry.get():
             messagebox.showerror(title="No Link!", message="Please input a link first!")
+            return
+
+        elif not self._link_entry.get().startswith("https://"):
+            messagebox.showerror(
+                title="Invalid Link!", message="Please input a valid link!"
+            )
             return
 
         # create a top level window
@@ -382,6 +385,7 @@ class ClipsWindow(CTkFrame):
             if status.get("status") == "finished":
                 # reload clips after download
                 self._load_clips_to_ui()
+                self._progress_variable.set(value=0)
 
                 # enable close button
                 close_button.configure(state="normal")

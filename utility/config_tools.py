@@ -5,7 +5,7 @@ from json import dump, load
 from models.config_data import ApiDefaultSettings, ConfigData, StoryDefaultSettings
 
 
-def save_api_config(config_object: ConfigData):
+def save_api_config(config_object: ConfigData) -> None:
     """Save your config file locally.
 
     Args:
@@ -45,7 +45,12 @@ def save_api_config(config_object: ConfigData):
 
 
 def load_config_object() -> ConfigData:
-    """Load the config object."""
+    """Load the config object.
+
+    Returns:
+        ConfigData: The config object.
+
+    """
     # return config data with default values
     if not isfile("config.json"):
         config_data = ConfigData(StoryDefaultSettings(), ApiDefaultSettings())

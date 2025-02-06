@@ -30,7 +30,15 @@ from utility.vidgen_api import VidGen
 
 
 class VideoWindow(CTkFrame):
-    """Video window content."""
+    """Video window content.
+
+    Attributes:
+        name (str): The name of the component used in sidebar for checking.
+
+    Methods:
+        pack(**kwargs: Any): Render the component to the main window.
+
+    """
 
     def __init__(self, master: CTkFrame, config_data: ConfigData, **kwargs: Any):
         """Initialize VideoWindow.
@@ -174,7 +182,12 @@ class VideoWindow(CTkFrame):
         ).pack(expand=True, fill="x", padx=(0, 220))
 
     def _setup_option_widgets(self, center_frame: CTkFrame):
-        """Set up the options widgets."""
+        """Set up the options widgets.
+
+        Args:
+            center_frame (CTkFrame): The frame to pack the widgets to.
+
+        """
         # main frame for padding
         main_frame = CTkFrame(master=center_frame, fg_color="transparent")
         main_frame.pack(padx=20, pady=20, fill="x", expand=True)
@@ -416,8 +429,16 @@ class VideoWindow(CTkFrame):
         label_state: CTkLabel,
         additional_message: str = "",
         current_video_path_to_upload: str = "",
-    ):
-        """Call when video upload is done."""
+    ) -> None:
+        """Call when video upload is done.
+
+        Args:
+            status (bool): The status of the upload.
+            label_state (CTkLabel): The label to update.
+            additional_message (str, optional): Additional message to show. Defaults to "".
+            current_video_path_to_upload (str, optional): The current video path to upload. Defaults to "".
+
+        """
         if not status:
             label_state.configure(
                 text=(
